@@ -1,3 +1,35 @@
+----------------------------cde of encrypt in code itself-----------------------------------------------------------
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
+public class JasyptAdvancedTest {
+	@Test
+	public void testPasswordEncryptor() {
+		StandardPBEStringEncryptor encryptorAes256 = new StandardPBEStringEncryptor();
+
+		encryptorAes256.setPassword("DD_PASS");
+
+		encryptorAes256.setAlgorithm("PBEWITHHMACSHA512ANDAES_256");
+
+		encryptorAes256.setProviderName("SunJCE");
+
+		encryptorAes256.setStringOutputType("base64");
+		// encryptorAes256.set
+		encryptorAes256.setIvGenerator(new RandomIvGenerator());
+
+
+		String rawPassword = "cderf123#";
+		String encryptedPassword = encryptorAes256.encrypt(rawPassword);
+		log.info(" password:-  "+ rawPassword +"Encrypted password  \n"+encryptedPassword);
+
+		encryptedPassword = encryptorAes256.decrypt(encryptedPassword);
+		log.info(encryptedPassword);
+
+	}
+}
+
+
+
+
 -------------------------------------------------------------Encrypt-----------------------------------------------------------
 @Test
 void givenString_whenEncrypt_thenSuccess()
