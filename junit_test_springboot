@@ -1,0 +1,299 @@
+-------------------------------------------------------------Encrypt-----------------------------------------------------------
+@Test
+void givenString_whenEncrypt_thenSuccess()
+    throws NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException,
+    BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException { 
+    
+    String input = "baeldung";
+    SecretKey key = AESUtil.generateKey(128);
+    IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+    String algorithm = "AES/CBC/PKCS5Padding";
+    String cipherText = AESUtil.encrypt(algorithm, input, key, ivParameterSpec);
+    String plainText = AESUtil.decrypt(algorithm, cipherText, key, ivParameterSpec);
+    Assertions.assertEquals(input, plainText);
+}
+
+-------------------------------------------Encrypt second---------------------------------------------------------------------------
+@Test
+void givenPassword_whenEncrypt_thenSuccess() 
+    throws InvalidKeySpecException, NoSuchAlgorithmException, 
+    IllegalBlockSizeException, InvalidKeyException, BadPaddingException, 
+    InvalidAlgorithmParameterException, NoSuchPaddingException {
+    
+    String plainText = "www.baeldung.com";
+    String password = "baeldung";
+    String salt = "12345678";
+    IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+    SecretKey key = AESUtil.getKeyFromPassword(password,salt);
+    String cipherText = AESUtil.encryptPasswordBased(plainText, key, ivParameterSpec);
+    String decryptedCipherText = AESUtil.decryptPasswordBased(
+      cipherText, key, ivParameterSpec);
+    Assertions.assertEquals(plainText, decryptedCipherText);
+}
+
+-------------------------------------Decrypt-----------------------------------------------------------------------------------------
+
+
+@Test
+void givenFile_whenEncrypt_thenSuccess() 
+    throws NoSuchAlgorithmException, IOException, IllegalBlockSizeException, 
+    InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, 
+    NoSuchPaddingException {
+    
+    SecretKey key = AESUtil.generateKey(128);
+    String algorithm = "AES/CBC/PKCS5Padding";
+    IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+    Resource resource = new ClassPathResource("inputFile/baeldung.txt");
+    File inputFile = resource.getFile();
+    File encryptedFile = new File("classpath:baeldung.encrypted");
+    File decryptedFile = new File("document.decrypted");
+    AESUtil.encryptFile(algorithm, key, ivParameterSpec, inputFile, encryptedFile);
+    AESUtil.decryptFile(
+      algorithm, key, ivParameterSpec, encryptedFile, decryptedFile);
+    assertThat(inputFile).hasSameTextualContentAs(decryptedFile);
+}
+
+----------------------------------------------------Decrypt object second--------------------------------------------------------
+@Test
+void givenObject_whenEncrypt_thenSuccess() 
+    throws NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException,
+    InvalidAlgorithmParameterException, NoSuchPaddingException, IOException, 
+    BadPaddingException, ClassNotFoundException {
+    
+    Student student = new Student("Baeldung", 20);
+    SecretKey key = AESUtil.generateKey(128);
+    IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+    String algorithm = "AES/CBC/PKCS5Padding";
+    SealedObject sealedObject = AESUtil.encryptObject(
+      algorithm, student, key, ivParameterSpec);
+    Student object = (Student) AESUtil.decryptObject(
+      algorithm, sealedObject, key, ivParameterSpec);
+    assertThat(student).isEqualToComparingFieldByField(object);
+}
+
+---------------------------------------------------------------next method-----------------------------------------------------------
+package net.codejava.crypto;
+ 
+import java.io.File;
+ 
+/**
+ * A tester for the CryptoUtils class.
+ * @author www.codejava.net
+ *
+ */
+public class CryptoUtilsTest {
+    public static void main(String[] args) {
+        String key = "Mary has one cat1";
+        File inputFile = new File("document.txt");
+        File encryptedFile = new File("document.encrypted");
+        File decryptedFile = new File("document.decrypted");
+         
+        try {
+            CryptoUtils.encrypt(key, inputFile, encryptedFile);
+            CryptoUtils.decrypt(key, encryptedFile, decryptedFile);
+        } catch (CryptoException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+}
+
+
+
+---------------------------------------------------------------------second method------------------------------------------------
+
+Test
+public void testThatEncryptingStringResultsInExpectedBytes() {
+    byte[] encryption = enigma.encryptString(TEST_STRING);
+
+    assertArrayEquals(EXPECTED_ENCRYPTION, encryption);
+}
+
+@Test
+public void testThatDecryptinEncryptionResultsInOriginalString() {
+    String decryption = enigma.decryptBytes(TEST_ENCRYPTION);
+
+    assertEquals(EXPECTED_ORIGINAL_STRING, decryption);
+}
+
+@Test
+public void testThatDecriptionReversesEncryption() {
+    String decryption = enigma.decryptBytes(enigma.encryptString(TEST_STRING));
+
+    assertEquals(TEST_STRING, decryption);
+}
+
+@Test
+public void testThatEncryptionReversesDecryption() {
+    byte[] encryption = enigma.encriptString(enigma.decryptBytes(TEST_ENCRYPTION));
+
+    assertEquals(TEST_ENCRYPTION, encryption);
+}
+
+
+-----------------------------------------------------Third method--------------------------------------------------
+second junit test
+
+import static org.junit.Assert.*;
+
+import java.math.BigInteger;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
+
+import javax.crypto.Cipher;
+
+import org.apache.commons.codec.binary.Base64;
+import org.junit.Test;
+
+public class TestRSA {
+
+	private static final String STRING_TO_ENCRYPT = "test string";
+	private static final String CHAR_ENCODING = "UTF-8";
+	
+	private static final String PUBLIC_KEY_MODULUS = "114148583453528745752158573299299462974849455803660656482072552191881163973185343560593952047234554690302302264823153536655488960387116585505622616432041543078622970397250697451778064891543319594178153797228157167683013081933196126650429380296544727748466019924362570851520110617956047194419951742367399790853";
+	private static final String PUBLIC_KEY_EXPONENT = "65537";
+	private static final String PRIVATE_KEY_MODULUS = "114148583453528745752158573299299462974849455803660656482072552191881163973185343560593952047234554690302302264823153536655488960387116585505622616432041543078622970397250697451778064891543319594178153797228157167683013081933196126650429380296544727748466019924362570851520110617956047194419951742367399790853";
+	private static final String PRIVATE_KEY_EXPONENT = "33298634640959497097666472440545144470347618842095067376051132227663519734491316328050340650915211507533140282571509976254324090890350410938805456169000256520741194286946780602454621083327057643032729590642843725780625377381384749342388096938198107146927109759526548861172195154004923472826081212789832947265";
+
+	@Test
+	public void testEncryptDecrypt() throws Throwable {
+
+		KeyFactory fact = KeyFactory.getInstance("RSA");
+
+		RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(new BigInteger(
+				PUBLIC_KEY_MODULUS), new BigInteger(PUBLIC_KEY_EXPONENT));
+		PublicKey pubKey = fact.generatePublic(publicKeySpec);
+
+		RSAPrivateKeySpec privateKeySpec = new RSAPrivateKeySpec(
+				new BigInteger(PRIVATE_KEY_MODULUS), new BigInteger(
+						PRIVATE_KEY_EXPONENT));
+		PrivateKey privKey = fact.generatePrivate(privateKeySpec);
+
+		byte[] cipherData = null;
+		Cipher cipher = null;
+		try {
+			System.out.println("String to encrypt: " + STRING_TO_ENCRYPT);
+			cipher = Cipher.getInstance("RSA");
+			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+			cipherData = cipher.doFinal(STRING_TO_ENCRYPT.getBytes(CHAR_ENCODING));
+
+			String encryptedString = Base64
+					.encodeBase64URLSafeString(cipherData);
+			System.out.println("String after encryption: " + encryptedString);
+
+			cipher.init(Cipher.DECRYPT_MODE, privKey);
+
+			byte[] decryptedData = cipher.doFinal(Base64
+					.decodeBase64(encryptedString));
+			String decryptedString = new String(decryptedData, CHAR_ENCODING);
+			System.out.println("String after decryption: " + decryptedString);
+			
+			assertEquals("decrypted stinrg is wrong!!",STRING_TO_ENCRYPT,decryptedString);
+			
+		} catch (Exception e1) {
+			System.out.println("error: " + e1.getMessage());
+		}
+
+	}
+
+	@Test
+	public void generateKeys() throws Exception {
+
+		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+		kpg.initialize(1024);
+		KeyPair kp = kpg.genKeyPair();
+		Key publicKey = kp.getPublic();
+		Key privateKey = kp.getPrivate();
+
+		KeyFactory fact = KeyFactory.getInstance("RSA");
+
+		RSAPublicKeySpec pub = (RSAPublicKeySpec) fact.getKeySpec(publicKey,
+				RSAPublicKeySpec.class);
+
+		RSAPrivateKeySpec priv = (RSAPrivateKeySpec) fact.getKeySpec(
+				privateKey, RSAPrivateKeySpec.class);
+
+		System.out.println("Public key Modulus: " + pub.getModulus());
+		System.out.println("Public key Exponent: " + pub.getPublicExponent());
+
+		System.out.println("Private key Modulus: " + priv.getModulus());
+		System.out
+				.println("Private key Exponent: " + priv.getPrivateExponent());
+
+	}
+
+}
+
+------------------------------------------------url status code junit--------------------------------------------------
+
+@Test
+public void givenUserDoesNotExists_whenUserInfoIsRetrieved_then404IsReceived()
+  throws ClientProtocolException, IOException {
+ 
+    // Given
+    String name = RandomStringUtils.randomAlphabetic( 8 );
+    HttpUriRequest request = new HttpGet( "https://api.github.com/users/" + name );
+
+    // When
+    HttpResponse httpResponse = HttpClientBuilder.create().build().execute( request );
+
+    // Then
+    assertThat(
+      httpResponse.getStatusLine().getStatusCode(),
+      equalTo(HttpStatus.SC_NOT_FOUND));
+}
+
+---------------------------------------------url junit media type---------------------------------------------------------------
+@Test
+public void 
+givenRequestWithNoAcceptHeader_whenRequestIsExecuted_thenDefaultResponseContentTypeIsJson()
+  throws ClientProtocolException, IOException {
+ 
+   // Given
+   String jsonMimeType = "application/json";
+   HttpUriRequest request = new HttpGet( "https://api.github.com/users/eugenp" );
+
+   // When
+   HttpResponse response = HttpClientBuilder.create().build().execute( request );
+
+   // Then
+   String mimeType = ContentType.getOrDefault(response.getEntity()).getMimeType();
+   assertEquals( jsonMimeType, mimeType );
+}
+
+---------------------------------------url junit play load---------------------------------------------------------------------------
+@Test
+public void 
+  givenUserExists_whenUserInformationIsRetrieved_thenRetrievedResourceIsCorrect()
+  throws ClientProtocolException, IOException {
+ 
+    // Given
+    HttpUriRequest request = new HttpGet( "https://api.github.com/users/eugenp" );
+
+    // When
+    HttpResponse response = HttpClientBuilder.create().build().execute( request );
+
+    // Then
+    GitHubUser resource = RetrieveUtil.retrieveResourceFromResponse(
+      response, GitHubUser.class);
+    assertThat( "eugenp", Matchers.is( resource.getLogin() ) );
+}
+
+----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
