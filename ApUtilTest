@@ -1,0 +1,89 @@
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
+public class ApUtilTest {
+
+	private MockMvc mockMvc;
+	
+	//below this import from main project and check
+	@InjectMocks
+	private ApUtil aputil;
+	
+	@Mock
+	private ApLoginRequest apLoginRequest;
+	
+	@Autowired
+	private AppRepository appRepository;
+	
+	public static String toString = "anuj";
+	
+	@Test
+	public void testEncryot() {
+				
+		ApUtil ap = Mockito.mock(ApUtil.class);
+		when(ap.encrypt(toString())).thenReturn("anuj");
+				
+		aputil = Mockito.spy(ApUtil.class);
+		aputil.encrypt(toString);
+	    verify(aputil, times(1)).encrypt(toString);			
+	}
+	
+			
+		@Test
+		public void decryptTest() { 
+			ApUtil ap = Mockito.mock(ApUtil.class);
+			when(ap.decrypt(toString())).thenReturn("anuj");
+		
+			aputil = Mockito.spy(ApUtil.class);
+			aputil.decrypt(toString);
+			verify(aputil, times(1)).decrypt(toString);
+		}
+ 
+		@Test
+		public void validateLoginTest() {
+			ApLoginRequest apLogin = new ApLoginRequest();
+			apLogin.setTenantId("1");
+			apLogin.setUserId("1");
+			apLogin.setUserName(toString);
+			ApLoginRequest apl = Mockito.mock(ApLoginRequest.class);
+			when(apl.getTenantId()).thenReturn("1");
+			
+			aputil = Mockito.spy(ApUtil.class);
+			aputil.validateLogin(apLogin);
+			verify(aputil, times(1)).validateLogin(apLogin);
+		}
+
+  
+		@Test
+		public  void getScriptCodeTest() {
+			ApUtil getSC = Mockito.mock(ApUtil.class);
+			when(getSC.getScriptCode("webChatId", "url")).thenReturn("webChatId", "url");
+			
+			aputil = Mockito.spy(ApUtil.class);
+			aputil.getScriptCode("webChatId", "url");
+			verify(aputil, times(1)).getScriptCode("webChatId", "url");
+		}
+
+}
