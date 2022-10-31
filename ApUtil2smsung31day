@@ -1,0 +1,75 @@
+package com.sds.automation.platform;
+
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class ApUtilTest {
+
+	@InjectMocks
+	private ApUtil aputil;
+
+	
+	public static String toString = "anuj";
+	
+	@Test
+	public void testEncryot() {
+				
+		ApUtil ap = Mockito.mock(ApUtil.class);
+		when(ap.encrypt(toString())).thenReturn("anuj");
+				
+		aputil = Mockito.spy(ApUtil.class);
+		aputil.encrypt(toString);
+		Assert.assertNotNull(toString);
+	    verify(aputil, times(1)).encrypt(toString);			
+	}
+	
+			
+		@Test
+		public void decryptTest() { 
+			ApUtil ap = Mockito.mock(ApUtil.class);
+			when(ap.decrypt(toString())).thenReturn("anuj");
+		
+			aputil = Mockito.spy(ApUtil.class);
+			aputil.decrypt(toString);
+			Assert.assertNotNull(toString);
+			verify(aputil, times(1)).decrypt(toString);
+		}
+ 
+		@Test
+		public void validateLoginTest() {
+			ApLoginRequest apLogin = new ApLoginRequest();
+			apLogin.setTenantId("1");
+			apLogin.setUserId("1");
+			apLogin.setUserName(toString);
+			ApLoginRequest apl = Mockito.mock(ApLoginRequest.class);
+			when(apl.getTenantId()).thenReturn("1");
+			
+			aputil = Mockito.spy(ApUtil.class);
+			aputil.validateLogin(apLogin);
+			Assert.assertNotNull(apLogin);
+			verify(aputil, times(1)).validateLogin(apLogin);
+		}
+
+  
+		@Test
+		public  void getScriptCodeTest() {
+			ApUtil getSC = Mockito.mock(ApUtil.class);
+			when(getSC.getScriptCode("webChatId", "url")).thenReturn("webChatId", "url");
+			
+			aputil = Mockito.spy(ApUtil.class);
+			aputil.getScriptCode("webChatId", "url");
+			Assert.assertNotNull("webChatId", "url");
+			verify(aputil, times(1)).getScriptCode("webChatId", "url");
+		}
+
+}
+
