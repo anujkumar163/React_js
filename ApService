@@ -1,0 +1,537 @@
+
+
+import com.sds.auth.AuthService;
+import com.sds.config.JwtConfig;
+import com.sds.config.JwtSecretKey;
+import com.sds.constants.BrityConstants;
+import com.sds.enums.AppTypeEnum;
+import com.sds.enums.EnumStatus;
+import com.sds.exception.BadRequestException;
+import com.sds.exception.ResourceNotFoundException;
+import com.sds.model.*;
+import com.sds.pojo.ActionCardImage;
+import com.sds.pojo.AppRequest;
+import com.sds.pojo.WebchatRequest;
+import com.sds.repository.*;
+import com.sds.utility.RandomKeyGenrateUtility;
+import com.sds.workspace.WorkspaceService;
+import com.sds.workspace.webchat.user.SecreteKeyGenerator;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+public class ApService {
+
+	@Autowired
+	WorkspaceService workspaceService;
+
+	@Autowired
+	private AuthService authService;
+
+	@Autowired
+	AuthenticationManager authenticationManager;
+
+	@Autowired
+	JwtConfig jwtConfig;
+
+	@Autowired
+	JwtSecretKey jwtSecretKey;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private WorkspaceWebchatRepository workspaceWebchatRepository;
+	@Autowired
+	AdminRepository adminRepository;
+	@Autowired
+	WorkspaceApprovalRepository workspaceApprovalRepository;
+	@Autowired
+	WorkspaceRepository workspaceRepository;
+	@Autowired
+	private ActionCardRepository actionCardRepository;
+	@Autowired
+	private AppRepository appRepository;
+
+	@Autowired
+	private AppTypeRepository appTypeRepository;
+	@Autowired
+	private GroupRepository groupRepository;
+	@Autowired
+	private ActionCardTypeRepository actionCardTypeRepository;
+
+	@Value("${installation.url}")
+	private String url;
+
+	public ApResponse createProvision(ApCreateRequest apCreateRequest) {
+		try {
+			log.info("apRequest after decrypt " + apCreateRequest.toString());
+
+			validateApRequest(apCreateRequest);
+			AdminUserEntity adminUserEntity = null;
+
+			boolean isEmailIdExists = authService.isExistsByEmailId(apCreateRequest.getUserId());
+			if (!isEmailIdExists) {
+				adminUserEntity = createAdmin(apCreateRequest);
+			} else {
+				adminUserEntity = adminRepository.findByEmailId(apCreateRequest.getUserId());
+				adminUserEntity.setName(apCreateRequest.getUserName());
+				adminRepository.save(adminUserEntity);
+				authService.updateAdminPassword(adminUserEntity, adminUserEntity.getEmailId());
+				generateToken(adminUserEntity.getEmailId(), apCreateRequest.getTenantId());
+			}
+
+			WorkspaceEntity workspaceEntity = createWorkSpace(adminUserEntity, apCreateRequest.getTenantName(),
+					apCreateRequest);
+			Long workspaceId = workspaceEntity.getId();
+
+			WebchatRequest webchatRequest = new WebchatRequest();
+			webchatRequest.setWebchatName(apCreateRequest.getTenantName());
+			webchatRequest.setType("Multi");
+			webchatRequest.setUsedSso("On");
+			webchatRequest.setStatus("On");
+			webchatRequest.setActionCard(apCreateRequest.getTenantName());
+
+			WebChatEntity webChatEntity = createWebchatList(webchatRequest, workspaceId, adminUserEntity.getId());
+
+			Long webchatId = webChatEntity.getId();
+			AppRequest brityAppRequest = new AppRequest();
+
+			brityAppRequest.setAppName(apCreateRequest.getTenantName());
+			brityAppRequest.setCmServerUrl(apCreateRequest.getAppUrl());
+			brityAppRequest.setDmServerUrl(null);
+			brityAppRequest.setWorkspaceId(workspaceId);
+			brityAppRequest.setBotstationServerUrl(apCreateRequest.getAppUrl());
+			brityAppRequest.setAppType(AppTypeEnum.AUTOMATION_PLATFORM.getName());
+			brityAppRequest
+					.setTenantName(apCreateRequest.getTenantName() != null ? apCreateRequest.getTenantName() : "");
+			AppEntity appEntity = createAPP(workspaceId, brityAppRequest, adminUserEntity.getId());
+
+			String updateWebchatList = updateWebchatList(workspaceId, webchatRequest, webchatId,
+					apCreateRequest.getTenantName(), appEntity, apCreateRequest.getTenantId());
+			ApUtil apUtil = new ApUtil();
+			ApResponse apResponse = new ApResponse();
+			apResponse.setSecretKey(webChatEntity.getSecretKey());
+			apResponse.setScriptCode(apUtil.getScriptCode(webChatEntity.getKey(), url));
+			apResponse.setWorkSpaceName(workspaceEntity.getWorkspaceName());
+			apResponse.setWorkSpaceId(workspaceEntity.getWorkspaceKey());
+			apResponse.setBrityChatId(webChatEntity.getKey());
+			apResponse.setBrityChatName(webChatEntity.getName());
+			log.info("apResponse SecretKey: " + apResponse.getSecretKey());
+			log.info("apResponse ScriptCode: " + apResponse.getScriptCode());
+			log.info("apResponse WorkSpaceName: " + apResponse.getWorkSpaceName());
+			log.info("apResponse WorkSpaceId: " + apResponse.getWorkSpaceId());
+			log.info("apResponse BrityChatId: " + apResponse.getBrityChatId());
+			log.info("apResponse BrityChatName: " + apResponse.getBrityChatName());
+			log.info("apResponse " + apResponse.toString());
+			return apResponse;
+		} catch (Exception e) {
+			throw new RuntimeException("Processing Error " + e.getMessage());
+		}
+
+	}
+
+	public ResponseEntity<Map<String, String>> loginProvision(ApLoginRequest apLoginRequest) throws Exception {
+		try {
+			ApUtil util = new ApUtil();
+			util.validateLogin(apLoginRequest);
+		} catch (Exception e) {
+			throw new RuntimeException("Processing Error " + e.getMessage());
+		}
+		return loginAdmin(apLoginRequest);
+	}
+
+	public ResponseEntity<Map<String, String>> loginAdmin(ApLoginRequest apLoginRequest) throws Exception {
+		ResponseEntity<Map<String, String>> responseEntity = null;
+		String emailId = apLoginRequest.getUserId();
+		String password = apLoginRequest.getTenantId();
+		String name = apLoginRequest.getUserName();
+		boolean isExistsByEmailId = authService.isExistsByEmailId(emailId);
+		boolean isExistsByTenantId = workspaceRepository.existsByTenantIdAndWsType(password, "AP");
+		if (!isExistsByTenantId) {
+			throw new RuntimeException("Tenant Id is not existed, please do provision first");
+		}
+		if (isExistsByEmailId && isExistsByTenantId) {
+			WorkspaceEntity workspaceEntity = workspaceRepository.findByTenantIdAndWsType(password, "AP");
+			AdminUserEntity adminUserEntity = adminRepository.findByEmailId(emailId);
+			WorkspaceAdminApprovalEntity WorkspaceAdminApprovalEntity = workspaceApprovalRepository
+					.findByAdminUserDTOAndWorkspaceDTO(adminUserEntity, workspaceEntity);
+			if (WorkspaceAdminApprovalEntity == null) {
+				String workspaceKey = workspaceService.joinWorkspaceByKeyAP(workspaceEntity.getWorkspaceKey(),
+						adminUserEntity.getId(), BrityConstants.DIRECT_LOGIN_FLOW);
+				log.info("associated workspace" + workspaceKey);
+				adminUserEntity.setName(apLoginRequest.getUserName());
+				adminRepository.save(adminUserEntity);
+				authService.updateAdminPassword(adminUserEntity, adminUserEntity.getEmailId());
+				responseEntity = generateToken(emailId, apLoginRequest.getTenantId());
+
+			} else {
+				  adminUserEntity.setName(apLoginRequest.getUserName());
+				  adminRepository.save(adminUserEntity);
+				  responseEntity = generateToken(adminUserEntity.getEmailId(), apLoginRequest.getTenantId());
+			}
+
+		}
+		if (!isExistsByEmailId && isExistsByTenantId) {
+			AdminUserEntity adminUserEntity = authService.createAdminUserAp(name, emailId, password);
+			WorkspaceEntity workspaceEntity = workspaceRepository.findByTenantIdAndWsType(password, "AP");
+			String workspaceKey = workspaceService.joinWorkspaceByKeyAP(workspaceEntity.getWorkspaceKey(),
+					adminUserEntity.getId(), BrityConstants.DIRECT_LOGIN_FLOW);
+			log.info("associated workspace" + workspaceKey);
+			authService.updateAdminPassword(adminUserEntity, adminUserEntity.getEmailId());
+			responseEntity = generateToken(adminUserEntity.getEmailId(), apLoginRequest.getTenantId());
+		}
+
+		return responseEntity;
+	}
+
+	public WorkspaceEntity createWorkSpace(AdminUserEntity adminUserDTO, String workspaceName,
+			ApCreateRequest apCreateRequest) throws Exception {
+
+		log.info("with method ::" + BrityConstants.CREATE_WORK_SPACE + "::" + "with Admin Id ::");
+		WorkspaceEntity workspaceEntity = null;
+
+		WorkspaceEntity wrokSpaceDTO = null;
+
+		wrokSpaceDTO = workspaceRepository.findByTenantIdAndWsType(apCreateRequest.getTenantId(), "AP");
+
+		if (wrokSpaceDTO == null) {
+			WorkspaceEntity wrokSpaceDTOCreate = new WorkspaceEntity();
+			WorkspaceAdminApprovalEntity workspaceApprovalDTO = new WorkspaceAdminApprovalEntity();
+			wrokSpaceDTOCreate.setWorkspaceName(workspaceName);
+			wrokSpaceDTOCreate.setWsType(BrityConstants.AP);
+			wrokSpaceDTOCreate.setTenantId(apCreateRequest.getTenantId());
+			wrokSpaceDTOCreate.setClientId(apCreateRequest.getKeyOne());
+			wrokSpaceDTOCreate.setSecretId(apCreateRequest.getKeyTwo());
+			wrokSpaceDTOCreate.setWorkspaceKey(RandomKeyGenrateUtility.generateRandomPassword(10));
+			workspaceApprovalDTO.setStatus(EnumStatus.APPROVED);
+			workspaceApprovalDTO.setType(BrityConstants.CREATE_WORKSPACE);
+			workspaceApprovalDTO.setWorkspaceDTO(wrokSpaceDTOCreate);
+			workspaceApprovalDTO.setAdminUserDTO(adminUserDTO);
+			workspaceApprovalDTO.setUpdatedBy(adminUserDTO.getId());
+			try {
+				WorkspaceAdminApprovalEntity wsAdminApprovalEntityCreate = workspaceApprovalRepository
+						.save(workspaceApprovalDTO);
+				workspaceEntity = wsAdminApprovalEntityCreate.getWorkspaceDTO();
+			} catch (Exception e) {
+				log.error("Error in WorkspaceServiceImpl with method createWorkSpace" + e.getMessage());
+				throw new Exception("Workspace not created");
+			}
+		}
+		if (wrokSpaceDTO != null) {
+			WorkspaceAdminApprovalEntity wsAdminApprovalEntityJoin = workspaceApprovalRepository
+					.findByAdminUserDTOAndWorkspaceDTO(adminUserDTO, wrokSpaceDTO);
+			if (wsAdminApprovalEntityJoin == null) {
+				String workspaceKey = workspaceService.joinWorkspaceByKeyAP(wrokSpaceDTO.getWorkspaceKey(),
+						adminUserDTO.getId(), null);
+				log.info("associated workspace" + workspaceKey);
+
+				workspaceEntity = wrokSpaceDTO;
+
+			} else {
+				throw new Exception("tenatd id is already mapped with user id go for direct login");
+			}
+		}
+
+		return workspaceEntity;
+	}
+
+	public ApCreateRequest validateApRequest(ApCreateRequest apCreateRequest) {
+
+		ApUtil apUtil = new ApUtil();
+		if (!apUtil.validate(apCreateRequest)) {
+			throw new RuntimeException("failed to validate ap request");
+		}
+		apCreateRequest.setKeyOne(apCreateRequest.getKeyOne());
+		apCreateRequest.setKeyTwo(apCreateRequest.getKeyTwo());
+		apCreateRequest.setTenantId(apCreateRequest.getTenantId());
+
+		return apCreateRequest;
+
+	}
+
+	public AdminUserEntity createAdmin(ApCreateRequest apCreateRequest) {
+
+		ResponseEntity<Map<String, String>> responseEntity = null;
+		String emailId = apCreateRequest.getUserId();
+		boolean isExistsByEmailId = authService.isExistsByEmailId(emailId);
+
+		if (isExistsByEmailId) {
+			throw new BadRequestException("email id exists");
+		}
+
+		// If Not present - create a new user
+		String name = apCreateRequest.getUserName();
+		String password = apCreateRequest.getTenantId();
+		AdminUserEntity adminUserEntity = authService.createAdminUserAp(name, emailId, password);
+
+		if (adminUserEntity != null) {
+			responseEntity = generateToken(emailId, apCreateRequest.getTenantId());
+		}
+		return adminUserEntity;
+	}
+
+	// create webchat start
+	public WebChatEntity createWebchatList(WebchatRequest webchatRequest, Long workspaceId, Long adminId) {
+
+		log.info("WorkspaceWebchatservice || createWebchatList() invoked \n" + webchatRequest);
+
+		Long webchatId = 0L;
+		WebChatEntity webChatEntity = new WebChatEntity();
+		setStyleJsonInWebChatEntity(webChatEntity);
+		webChatEntity.setName(webchatRequest.getWebchatName());
+		// webChatEntity.setActionCardCount(Integer.parseInt(webchatRequest.getActionCard()));
+		webChatEntity.setType(webchatRequest.getType());
+		webChatEntity.setUpdatedBy(adminId);
+		String generatedKey = RandomKeyGenrateUtility.generateRandomPassword(10);
+		webChatEntity.setKey(generatedKey);
+//		webChatEntity.setStyleJson();
+		// webChatEntity.setUrl(url+generatedKey);
+		// webChatEntity.setStatus(BrityConstants.WEBCHAT_CREATE_STATUS);
+		// try {
+		// String modifier =
+		// adminRepository.findById(Long.parseLong(webchatRequest.getLastMofier())).get().getName();
+		// webChatEntity.setModifiedBy(modifier);
+
+		try {
+			WorkspaceEntity workspaceDto = workspaceRepository.findById(workspaceId)
+					.orElseThrow(() -> new ResourceNotFoundException("Data not found for workspace " + workspaceId));
+			if (workspaceDto != null) {
+				log.info(" workspaceby Id " + workspaceDto.getId() + " Workspace Name "
+						+ workspaceDto.getWorkspaceName());
+				webChatEntity.setWorkspaceDTO(workspaceDto);
+			} else {
+				log.info("Workspace id doesnot exit \n workspaceId: " + workspaceId);
+			}
+			log.info("Calling backend to register webchat ");
+			webChatEntity.setSecretKey(SecreteKeyGenerator.generateSecreteKey());
+			// webChatEntity.setType("AP");
+			webChatEntity = workspaceWebchatRepository.save(webChatEntity);
+			log.info("Webchat Registered !!");
+			log.info("Webchat : " + webChatEntity.getName() + " Saved");
+			webchatId = webChatEntity.getId();
+		} catch (Exception e) {
+			log.error("Error: " + e + "\nMessage : " + e.getMessage() + "Cause : " + e.getCause());
+		}
+		log.info("WorkspaceWebchatservice || createWebchatList() finished");
+		return webChatEntity;
+	}
+
+	private void setStyleJsonInWebChatEntity(WebChatEntity webChatEntity) {
+		Map<String, String> styleJsonMap = webChatEntity.getStyleJson();
+		styleJsonMap.put("webchatPreview", "true");
+		styleJsonMap.put("webchatMessageSwitch", "true");
+		styleJsonMap.put("webchatBadge", "true");
+		styleJsonMap.put("webchatSideSpacing", "20");
+		styleJsonMap.put("webchatBottomSpacing", "20");
+		styleJsonMap.put("webchatMessage", "Do you have any questions? ask me!");
+	}
+
+	// create app start
+	public AppEntity createAPP(Long workspaceId, AppRequest brityAppRequest, Long adminId) throws Exception {
+		log.info("From registerApp " + brityAppRequest);
+		boolean isPresent = false;
+		isPresent = checkForAppName(workspaceId, brityAppRequest.getAppName());
+		if (isPresent) {
+			throw new RuntimeException("APP id already there");
+		}
+		AppEntity appEntity = registerApp(brityAppRequest, adminId);
+		if (appEntity.getId() > 0) {
+			log.info("APP Created");
+		} else {
+			throw new RuntimeException("Not Modified");
+		}
+		return appEntity;
+
+	}
+
+	// public void createActionCard() {
+	// create action card w.r.t APP and Web chat}
+	public String updateWebchatList(Long workspaceId, WebchatRequest webchatRequest, Long webchatId, String actionName,
+			AppEntity appEntity, String tenantId) throws Exception {
+		Optional<WebChatEntity> findById = workspaceWebchatRepository.findById(webchatId);
+		if (!findById.isPresent()) {
+			return BrityConstants.WEBCHAT_ID_NOT_EXISTS;
+		}
+		WebChatEntity webChatEntity = findById.get();
+		if (workspaceId != null && workspaceId > 0 && !workspaceId.equals(webChatEntity.getWorkspaceDTO().getId())) {
+			throw new AccessDeniedException("EC14");
+		}
+		if (webchatRequest.getWebchatKey() != null) {
+			webChatEntity.setKey(webchatRequest.getWebchatKey());
+		}
+		if (webchatRequest.getStyleJson() != null) {
+			webChatEntity.setStyleJson(webchatRequest.getStyleJson());
+		}
+		if (webchatRequest.getStatus() != null) {
+			webChatEntity.setStatus(webchatRequest.getStatus());
+		}
+		if (webchatRequest.getUsedSso() != null) {
+			webChatEntity.setUsedSso(webchatRequest.getUsedSso());
+		}
+
+		ActionCardEntity actionCardEntity = null;
+		actionCardEntity = new ActionCardEntity();
+		List<GroupActionCardEntity> groupActionCardEntities = new ArrayList<>();
+		List<GroupEntity> groupEntities = null;
+		groupEntities = groupRepository.findByWebChatEntity(webChatEntity);
+		if (groupEntities != null) {
+
+			for (GroupEntity groupEntity : groupEntities) {
+				GroupActionCardEntity groupActionCardEntity = new GroupActionCardEntity();
+				groupActionCardEntity.setStatus(Boolean.TRUE.toString().toUpperCase());
+				groupActionCardEntity.setGroupEntity(groupEntity);
+				groupActionCardEntities.add(groupActionCardEntity);
+			}
+		}
+		if (actionCardEntity != null) {
+			actionCardEntity.setGroupActionCardEntities(groupActionCardEntities);
+		}
+
+		actionCardEntity.setWebChatEntity(webChatEntity);
+		actionCardEntity.setVideoLink(null);
+		actionCardEntity.setColorCode(null);
+		actionCardEntity.setActionCardName(actionName);
+		if(Objects.nonNull(appEntity) && Objects.nonNull(appEntity.getId())) {
+			actionCardEntity.setAppId(String.valueOf(appEntity.getId()));
+		}
+		
+		actionCardEntity.setBotId(tenantId);
+		actionCardEntity.setBotConnectionId(tenantId);
+
+		actionCardEntity.setTextLink(null);
+		actionCardEntity.setTextMain(null);
+		actionCardEntity.setTextSub(null);
+		actionCardEntity.setOrderNumber(0);
+		actionCardEntity.setToggle(true);
+		// Setting action card button here
+		actionCardEntity.setActioncardButtonMessage("Tasklist");
+		ActionCardTypeEntity actionCardTypeEntity = actionCardTypeRepository.findById(Long.valueOf(9)).get();
+		actionCardEntity.setActionCardTypeEntity(actionCardTypeEntity);
+		List<ActionCardImageEntity> actionCardImageEntities = new ArrayList<ActionCardImageEntity>();
+		actionCardImageEntities = getActionCardImageEntity(null);
+
+		actionCardEntity.setActionCardImageEntities(actionCardImageEntities);
+
+		actionCardRepository.save(actionCardEntity);
+
+		log.info(BrityConstants.WEBCHAT_UPDATED);
+		return BrityConstants.WEBCHAT_UPDATED;
+	}
+
+	private ResponseEntity<Map<String, String>> generateToken(String email, String tenantId) {
+		try {
+
+			AdminUserEntity adminUserEntity = adminRepository.findByEmailId(email);
+			if (Objects.isNull(adminUserEntity) || Objects.isNull(adminUserEntity.getRole())
+					|| Objects.isNull(adminUserEntity.getRole().getType())) {
+				throw new Exception("admin user data is not there for email id:" + email);
+			}
+
+			Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+			grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + adminUserEntity.getRole().getType()));
+		    
+			AuthUserEntity authUserEntity = new AuthUserEntity(adminUserEntity.getId().toString(), adminUserEntity.getPassword(),
+					grantedAuthorities, true, true, true, true);
+			Authentication authenticate = new UsernamePasswordAuthenticationToken(authUserEntity, null, grantedAuthorities);
+			String token = Jwts.builder().setSubject(authenticate.getName())
+					.claim("authorities", authenticate.getAuthorities()).claim("tenantId", tenantId)
+					.setIssuedAt(new Date())
+					.setExpiration(
+							java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays())))
+					.signWith(SignatureAlgorithm.HS512, jwtSecretKey.secretKey()).compact();
+			Map<String, String> map = new HashMap<>();
+			String authToken = jwtConfig.getTokenPrefix() + " " + token;
+			map.put("Authorization", authToken);
+			authService.updateAdminUser(email, token);
+
+			return new ResponseEntity<Map<String, String>>(map, HttpStatus.OK);
+
+		} catch (Exception e) {
+			log.info("Error in ApService | generateToken()" + e.getMessage());
+			throw new BadRequestException("EC5");
+		}
+
+	}
+
+	public boolean checkForAppName(Long workspaceId, String appName) {
+
+		WorkspaceEntity workspaceEntity = new WorkspaceEntity();
+		workspaceEntity.setId(workspaceId);
+
+		List<AppEntity> appEntties = appRepository.findByWorkspaceDTO(workspaceEntity);
+		List<String> appNames = appEntties.stream().map(AppEntity::getName).collect(Collectors.toList());
+
+		return appNames.contains(appName) ? true : false;
+	}
+
+	public AppEntity registerApp(AppRequest appRequest, Long loggedInAdminUserId) throws Exception {
+		log.info("Start registerApp ");
+		Long newRegAppId = 0L;
+		AppEntity appEntity = new AppEntity();
+		// appEntity.setUpdatedBy(adminRepository.findById(Long.parseLong(appRequest.getUpdatedBy())).get().getId());
+		appEntity.setUpdatedBy(loggedInAdminUserId);
+		appEntity.setName(appRequest.getAppName());
+		appEntity.setCmServerUrl(appRequest.getCmServerUrl());
+		appEntity.setDmServerUrl(appRequest.getDmServerUrl());
+		appEntity.setBotstationServerUrl(appRequest.getBotstationServerUrl());
+		// appEntity.setApp(brityAppRequest.getApp()); // TODO
+		appEntity.setTenantAccessKey(appRequest.getTanantAccessKey() != null ? appRequest.getTanantAccessKey() : "");
+		appEntity.setTenantName(appRequest.getTenantName() != null ? appRequest.getTenantName() : "");
+		appEntity.setServerUrl(appRequest.getServerUrl());
+		WorkspaceEntity workspaceDTO = workspaceRepository.findById(appRequest.getWorkspaceId()).get();
+		if (workspaceDTO != null) {
+			appEntity.setWorkspaceDTO(workspaceDTO);
+		}
+		Long appTypeKey = appRequest.getAppTypeKey();
+		AppTypeEntity appTypeEntity2 = appTypeRepository.findById(3l).orElseThrow(() -> {
+			return new ResourceNotFoundException("Invalid App key- " + appTypeKey);
+		});
+		appEntity.setAppTypeEntity(appTypeEntity2);
+		// appEntity.setWorkspaceDTO(null);
+
+		AppEntity appEntityResponse = null;
+		try {
+			appEntityResponse = appRepository.save(appEntity);
+			newRegAppId = appEntityResponse.getId();
+		} catch (Exception e) {
+			log.error("Error in AppService with method updateApp", e);
+			throw new ResourceNotFoundException(appRequest.getAppName() + BrityConstants.DATA_NOT_SAVED);
+		}
+		return appEntityResponse;
+	}
+
+	private List<ActionCardImageEntity> getActionCardImageEntity(List<ActionCardImage> imageLinks) {
+
+		if (imageLinks == null) {
+			return Collections.emptyList();
+		}
+
+		List<ActionCardImageEntity> actionCardImageEntities = new ArrayList<>();
+
+		for (ActionCardImage image : imageLinks) {
+			ActionCardImageEntity actionCardImageEntity = new ActionCardImageEntity();
+			actionCardImageEntity.setImageLink(image.getImageLink());
+			actionCardImageEntity.setImageRelUrl(image.getImageUrl());
+			actionCardImageEntities.add(actionCardImageEntity);
+		}
+		return actionCardImageEntities;
+
+	}
+}
