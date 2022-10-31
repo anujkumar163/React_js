@@ -1,0 +1,85 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
+
+@ContextConfiguration(classes = {ApUtil.class})
+@ExtendWith(SpringExtension.class)
+class ApUtilTest {
+    @Autowired
+    private ApUtil apUtil;
+
+    @MockBean
+    private RestTemplate restTemplate;
+
+    /**
+     * Method under test: {@link ApUtil#encrypt(String)}
+     */
+    @Test
+    void testEncrypt() {
+        assertNull(apUtil.encrypt("Str To Encrypt"));
+    }
+
+    /**
+     * Method under test: {@link ApUtil#decrypt(String)}
+     */
+    @Test
+    void testDecrypt() {
+        assertNull(apUtil.decrypt("Str To Encrypt"));
+    }
+
+    /**
+     * Method under test: {@link ApUtil#validateLogin(ApLoginRequest)}
+     */
+    @Test
+    void testValidateLogin() {
+        ApLoginRequest apLoginRequest = new ApLoginRequest();
+        apLoginRequest.setTenantId("42");
+        apLoginRequest.setUserId("42");
+        apLoginRequest.setUserName("janedoe");
+        ApLoginRequest actualValidateLoginResult = apUtil.validateLogin(apLoginRequest);
+        assertSame(apLoginRequest, actualValidateLoginResult);
+        assertEquals("42", actualValidateLoginResult.getTenantId());
+    }
+
+    /**
+     * Method under test: {@link ApUtil#validateLogin(ApLoginRequest)}
+     */
+    @Test
+    void testValidateLogin2() {
+        ApLoginRequest apLoginRequest = mock(ApLoginRequest.class);
+        when(apLoginRequest.getTenantId()).thenReturn("42");
+        doNothing().when(apLoginRequest).setTenantId((String) any());
+        doNothing().when(apLoginRequest).setUserId((String) any());
+        doNothing().when(apLoginRequest).setUserName((String) any());
+        apLoginRequest.setTenantId("42");
+        apLoginRequest.setUserId("42");
+        apLoginRequest.setUserName("janedoe");
+        apUtil.validateLogin(apLoginRequest);
+        verify(apLoginRequest).getTenantId();
+        verify(apLoginRequest, atLeast(1)).setTenantId((String) any());
+        verify(apLoginRequest).setUserId((String) any());
+        verify(apLoginRequest).setUserName((String) any());
+    }
+
+    /**
+     * Method under test: {@link ApUtil#getScriptCode(String, String)}
+     */
+    @Test
+    void testGetScriptCode() {
+        assertEquals("\\n", apUtil.getScriptCode("42", "https://example.org/example"));
+    }
+}
