@@ -1,0 +1,31 @@
+public void isExistByEmailAndTenantId() throws Exception {
+		
+		AdminUserEntity adminuserEntity = getAdminUserEntity();
+		WorkspaceEntity workspaceEntity = getWorkspcaeDTO();
+		WorkspaceAdminApprovalEntity workspaceAdminApprovalEntity = getWorkspaceAdminApprovalEntity();
+		AdminUserEntity adminUserEntity = getAdminUserEntity();
+		ApLoginRequest apLoginRequest = new ApLoginRequest();
+		apLoginRequest.setTenantId("42");
+		apLoginRequest.setUserId("42");
+		apLoginRequest.setUserName("janedoe");
+		when(authService.isExistsByEmailId((String) any())).thenReturn(true);
+		when(workspaceRepository.existsByTenantIdAndWsType((String) any(),(String) any())).thenReturn(true);
+
+		when(workspaceRepository.findByTenantIdAndWsType((String) any(),(String) any())).thenReturn(workspaceEntity );
+		when(adminRepository.findByEmailId((String) any())).thenReturn(adminuserEntity);
+		when(workspaceApprovalRepository.findByAdminUserDTOAndWorkspaceDTO( any(),any())).thenReturn(workspaceAdminApprovalEntity);
+		when(workspaceApprovalRepository.findByAdminUserDTOAndWorkspaceDTO(any(), eq(workspaceEntity)))
+				.thenReturn(null);
+		String workspacekey = workspaceEntity.getWorkspaceKey();;
+		when(workspaceService.joinWorkspaceByKeyAP(eq("Yeruva"), any(), eq(null))).thenReturn(workspacekey);
+		
+		when(adminRepository.save(any())).thenReturn(adminUserEntity);
+		doNothing().when(authService).updateAdminPassword(any(), eq("Yeruva120@gmail.com"));
+
+//		when(authenticationManager.authenticate(any()))
+//				.thenReturn(new UsernamePasswordAuthenticationToken("Yeruva120@gmail.com", "Yeruva120@gmail.com"));
+		when(adminRepository.findByEmailId("2")).thenReturn(adminUserEntity);
+		when(jwtSecretKey.secretKey())
+				.thenReturn("securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecuredev");
+		when(authService.createAdminUserAp("nameUser", "5", "qwerty")).thenReturn(adminuserEntity);
+	}
