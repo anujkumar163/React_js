@@ -1,0 +1,406 @@
+package com.practice.controller;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.practice.entity.Location;
+import com.practice.service.LocationService;
+import com.practice.utility.EmailService;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.ui.ModelMap;
+
+@ContextConfiguration(classes = {LocationController.class})
+@ExtendWith(SpringExtension.class)
+class LocationControllerTest {
+    @MockBean
+    private EmailService emailService;
+
+    @Autowired
+    private LocationController locationController;
+
+    @MockBean
+    private LocationService locationService;
+
+    /**
+     * Method under test: {@link LocationController#showLocationPage()}
+     */
+    @Test
+    void testShowLocationPage() {
+        //   Diffblue Cover was unable to write a Spring test,
+        //   so wrote a non-Spring test instead.
+        //   Reason: R008 Failed to instantiate class under test.
+        //   Diffblue Cover was unable to construct an instance of LocationController.
+        //   Ensure there is a package-visible constructor or factory method that does not
+        //   throw for the class under test.
+        //   If such a method is already present but Diffblue Cover does not find it, it can
+        //   be specified using custom rules for inputs:
+        //   https://docs.diffblue.com/knowledge-base/cli/custom-inputs/
+        //   This can happen because the factory method takes arguments, throws, returns null
+        //   or returns a subtype.
+        //   See https://diff.blue/R008 for further troubleshooting of this issue.
+
+        assertEquals("Create_location", (new LocationController()).showLocationPage());
+    }
+
+    /**
+     * Method under test: {@link LocationController#saveLocationData(Location, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testSaveLocationData() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.saveLocation(com.practice.entity.Location)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.saveLocationData(LocationController.java:36)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+
+        Location location = new Location();
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        locationController.saveLocationData(location, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#saveLocationData(Location, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testSaveLocationData2() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.saveLocation(com.practice.entity.Location)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.saveLocationData(LocationController.java:36)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+        Location location = mock(Location.class);
+        when(location.getCode()).thenReturn("Code");
+        when(location.getName()).thenReturn("Name");
+        when(location.getType()).thenReturn("Type");
+        when(location.getId()).thenReturn(123L);
+        doNothing().when(location).setCode((String) any());
+        doNothing().when(location).setId(anyLong());
+        doNothing().when(location).setName((String) any());
+        doNothing().when(location).setType((String) any());
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        locationController.saveLocationData(location, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#listAll(ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testListAll() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.getAllLocation()" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.listAll(LocationController.java:61)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+        locationController.listAll(new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#deleteLocation(long, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testDeleteLocation() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.deleteLocationById(long)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.deleteLocation(LocationController.java:69)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+        locationController.deleteLocation(123L, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#updateLocation(long, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testUpdateLocation() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.getLocationById(long)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.updateLocation(LocationController.java:78)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+        locationController.updateLocation(123L, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#updateLocationData(Location, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testUpdateLocationData() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.saveLocation(com.practice.entity.Location)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.updateLocationData(LocationController.java:89)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+
+        Location location = new Location();
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        locationController.updateLocationData(location, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#updateLocationData(Location, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testUpdateLocationData2() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.saveLocation(com.practice.entity.Location)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.updateLocationData(LocationController.java:89)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+        Location location = mock(Location.class);
+        when(location.getCode()).thenReturn("Code");
+        when(location.getName()).thenReturn("Name");
+        when(location.getType()).thenReturn("Type");
+        when(location.getId()).thenReturn(123L);
+        doNothing().when(location).setCode((String) any());
+        doNothing().when(location).setId(anyLong());
+        doNothing().when(location).setName((String) any());
+        doNothing().when(location).setType((String) any());
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        locationController.updateLocationData(location, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#saveLocationData1(Location, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testSaveLocationData1() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.saveLocation(com.practice.entity.Location)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.saveLocationData1(LocationController.java:97)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+
+        Location location = new Location();
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        locationController.saveLocationData1(location, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#saveLocationData1(Location, ModelMap)}
+     */
+    @Test
+    @Disabled("TODO: Complete this test")
+    void testSaveLocationData12() {
+        // TODO: Complete this test.
+        //   Reason: R013 No inputs found that don't throw a trivial exception.
+        //   Diffblue Cover tried to run the arrange/act section, but the method under
+        //   test threw
+        //   java.lang.NullPointerException: Cannot invoke "com.practice.service.LocationService.saveLocation(com.practice.entity.Location)" because "this.locationService" is null
+        //       at com.practice.controller.LocationController.saveLocationData1(LocationController.java:97)
+        //   See https://diff.blue/R013 to resolve this issue.
+
+        LocationController locationController = new LocationController();
+        Location location = mock(Location.class);
+        doNothing().when(location).setCode((String) any());
+        doNothing().when(location).setId(anyLong());
+        doNothing().when(location).setName((String) any());
+        doNothing().when(location).setType((String) any());
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        locationController.saveLocationData1(location, new ModelMap());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByName(String)}
+     */
+    @Test
+    void testFindByName() {
+        when(locationService.isExistByName((String) any())).thenReturn(true);
+        assertEquals("Create_location", locationController.findByName("Name"));
+        verify(locationService).isExistByName((String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByName(String)}
+     */
+    @Test
+    void testFindByName2() {
+        when(locationService.isExistByName((String) any())).thenReturn(false);
+        assertEquals("Create_location", locationController.findByName("Name"));
+        verify(locationService).isExistByName((String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByNameTest(String)}
+     */
+    @Test
+    void testFindByNameTest() {
+        when(locationService.isExistByName((String) any())).thenReturn(true);
+        assertEquals("Create_location", locationController.findByNameTest("Name"));
+        verify(locationService).isExistByName((String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByNameTest(String)}
+     */
+    @Test
+    void testFindByNameTest2() {
+        when(locationService.isExistByName((String) any())).thenReturn(false);
+        assertEquals("Create_location", locationController.findByNameTest("Name"));
+        verify(locationService).isExistByName((String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByNameAndType(String, String)}
+     */
+    @Test
+    void testFindByNameAndType() {
+        when(locationService.isExistByNameAndType((String) any(), (String) any())).thenReturn(true);
+        assertEquals("Create_location", locationController.findByNameAndType("Name", "Type"));
+        verify(locationService).isExistByNameAndType((String) any(), (String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByNameAndType(String, String)}
+     */
+    @Test
+    void testFindByNameAndType2() {
+        when(locationService.isExistByNameAndType((String) any(), (String) any())).thenReturn(false);
+        assertEquals("Create_location", locationController.findByNameAndType("Name", "Type"));
+        verify(locationService).isExistByNameAndType((String) any(), (String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#AndConditionFindByNameAndType(String, String, long)}
+     */
+    @Test
+    void testAndConditionFindByNameAndType() {
+        Location location = new Location();
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        when(locationService.findById(anyLong())).thenReturn(location);
+        when(locationService.isExistByName((String) any())).thenReturn(true);
+        when(locationService.isExistByNameAndType((String) any(), (String) any())).thenReturn(true);
+        assertEquals("Create_location", locationController.AndConditionFindByNameAndType("Name", "Type", 123L));
+        verify(locationService).isExistByName((String) any());
+        verify(locationService).isExistByNameAndType((String) any(), (String) any());
+        verify(locationService).findById(anyLong());
+    }
+
+    /**
+     * Method under test: {@link LocationController#AndConditionFindByNameAndType(String, String, long)}
+     */
+    @Test
+    void testAndConditionFindByNameAndType2() {
+        Location location = new Location();
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        when(locationService.findById(anyLong())).thenReturn(location);
+        when(locationService.isExistByName((String) any())).thenReturn(false);
+        when(locationService.isExistByNameAndType((String) any(), (String) any())).thenReturn(true);
+        assertEquals("Create_location", locationController.AndConditionFindByNameAndType("Name", "Type", 123L));
+        verify(locationService).isExistByName((String) any());
+        verify(locationService).isExistByNameAndType((String) any(), (String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#AndConditionFindByNameAndType(String, String, long)}
+     */
+    @Test
+    void testAndConditionFindByNameAndType3() {
+        Location location = new Location();
+        location.setCode("Code");
+        location.setId(123L);
+        location.setName("Name");
+        location.setType("Type");
+        when(locationService.findById(anyLong())).thenReturn(location);
+        when(locationService.isExistByName((String) any())).thenReturn(true);
+        when(locationService.isExistByNameAndType((String) any(), (String) any())).thenReturn(false);
+        assertEquals("Create_location", locationController.AndConditionFindByNameAndType("Name", "Type", 123L));
+        verify(locationService).isExistByName((String) any());
+        verify(locationService).isExistByNameAndType((String) any(), (String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByCode(String)}
+     */
+    @Test
+    void testFindByCode() {
+        when(locationService.findByCode((String) any())).thenReturn("By Code");
+        assertEquals("Create_location", locationController.findByCode("Code"));
+        verify(locationService).findByCode((String) any());
+    }
+
+    /**
+     * Method under test: {@link LocationController#findByCode(String)}
+     */
+    @Test
+    void testFindByCode2() {
+        when(locationService.findByCode((String) any())).thenReturn(null);
+        assertEquals("Create_location", locationController.findByCode("Code"));
+        verify(locationService).findByCode((String) any());
+    }
+}
+
