@@ -9,4 +9,21 @@ public ResponseEntity<Map<String, String>> loginProvision(ApLoginRequest apLogin
 		}
 		return loginAdmin(apLoginRequest);
 	}
-  --------------------------------------------------------------------------------------------------------
+  -----------------------------------------------------answer---------------------------------------------------
+  class TodayTest {
+    /**
+     * Method under test: {@link Today#loginProvision(ApLoginRequest)}
+     */
+    @Test
+    void testLoginProvision() throws Exception {
+        Today today = new Today();
+        //today class ka name ha kiske ander loginProvision method ha
+        ApLoginRequest apLoginRequest = new ApLoginRequest();
+        apLoginRequest.setTenantId("42");
+        apLoginRequest.setUserId("42");
+        apLoginRequest.setUserName("janedoe");
+        assertNull(today.loginProvision(apLoginRequest));
+        assertEquals("42", apLoginRequest.getTenantId());
+    }
+}
+----------------------------------_____------------------___________------------------______________-----------------
