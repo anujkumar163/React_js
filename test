@@ -1,0 +1,12 @@
+----------------------------class to test first---------------------------------------------------------
+
+public ResponseEntity<Map<String, String>> loginProvision(ApLoginRequest apLoginRequest) throws Exception {
+		try {
+			ApUtil util = new ApUtil();
+			util.validateLogin(apLoginRequest);
+		} catch (Exception e) {
+			throw new RuntimeException("Processing Error " + e.getMessage());
+		}
+		return loginAdmin(apLoginRequest);
+	}
+  --------------------------------------------------------------------------------------------------------
