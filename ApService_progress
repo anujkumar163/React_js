@@ -29,3 +29,30 @@ public void isExistByEmailAndTenantId() throws Exception {
 				.thenReturn("securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecuredev");
 		when(authService.createAdminUserAp("nameUser", "5", "qwerty")).thenReturn(adminuserEntity);
 	}
+	
+	
+	----------------------------------------------------6-11-2022-----------------------------------------------------------
+	@Test(expected = RuntimeException.class)
+	public void loginAdminRemainingTest(){
+		AdminUserEntity adminuserEntity = getAdminUserEntity();
+		WorkspaceEntity workspaceEntity = getWorkspcaeDTO();
+		ApLoginRequest apLogin =  getApLoginRequest();
+		ApLoginRequest apl = Mockito.mock(ApLoginRequest.class);
+		when(apl.getTenantId()).thenReturn(String.valueOf(Optional.of(apLogin)));
+		assertThrows(RuntimeException.class, () -> {
+			apLogin.getTenantId("2L");
+		});
+
+		when(workspaceRepository.findByTenantIdAndWsType("qwerty", BrityConstants.AP)).thenReturn(workspaceEntity);
+		verify(workspaceRepository, times(1)).findByTenantIdAndWsType("qwerty", BrityConstants.AP);
+		when(authService.isExistsByEmailId("5")).thenReturn(true);
+		verify(authService, times(1)).isExistsByEmailId("5");
+		
+		when(authService.isExistsByEmailId(any())).thenReturn(Optional.of(adminuserEntity);
+		AdminUserEntity isExistsByEmailId = adminuserEntity.getEmailId("5");
+		assertNotNull(isExistsByEmailId );
+		assertThat(isExistsByEmailId.getEmailId()).isEqualTo("5");
+		
+		
+	}
+	---------------------------------------------------------------------------------------------------------------------------------
