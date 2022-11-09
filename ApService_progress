@@ -56,3 +56,103 @@ public void isExistByEmailAndTenantId() throws Exception {
 		
 	}
 	---------------------------------------------------------------------------------------------------------------------------------
+	
+	@Test(expected = RuntimeException.class)
+	@DisplayName("if condition for tenantid")
+	public void loginAdminRemainingTest(){
+		WorkspaceAdminApprovalEntity workspaceApprovalDTO  = getWorkspaceAdminApprovalEntity();
+		WorkspaceAdminApprovalEntity workspaceAdminApprovalEntity = getWorkspaceAdminApprovalEntity();
+		AdminUserEntity adminuserEntity = getAdminUserEntity();
+		WorkspaceEntity workspaceEntity = getWorkspcaeDTO();
+		ApLoginRequest apLogin =  getApLoginRequest();
+		ApLoginRequest apl = Mockito.mock(ApLoginRequest.class);
+		when(apl.getTenantId()).thenReturn(String.valueOf(Optional.of(apLogin)));
+		assertThrows(RuntimeException.class, () -> {
+			apLogin.getTenantId("2L");
+		});
+
+		assertThrows(new Exception(), () ->{
+			workspaceApprovalRepository
+					.save(workspaceApprovalDTO);
+		});
+
+		assertThrows(NullPointerException.class, () -> adminuserEntity.getId(Long "233333"),"tenatd id is already mapped with user id go for direct login")  ;
+
+
+
+
+
+		when(workspaceRepository.findByTenantIdAndWsType("qwerty", BrityConstants.AP)).thenReturn(workspaceEntity);
+		verify(workspaceRepository, times(1)).findByTenantIdAndWsType("qwerty", BrityConstants.AP);
+		when(authService.isExistsByEmailId("5")).thenReturn(true);
+		verify(authService, times(1)).isExistsByEmailId("5");
+
+		when(authService.isExistsByEmailId(any())).thenReturn(Optional.of(adminuserEntity);
+		AdminUserEntity isExistsByEmailId = adminuserEntity.getEmailId("5");
+		assertNotNull(adminuserEntity);
+		assertNotNull(workspaceEntity);
+		assertNull(workspaceAdminApprovalEntity);
+		assertNull(workspaceEntity);
+
+		assertEquals("5","5");
+
+	}
+
+	@Test
+	public void validateApRequest() throws Exception {
+		ApLoginRequest apLoginRequest = getApLoginRequest();
+		ApLoginRequest apl = Mockito.mock(ApLoginRequest.class);
+		when(apl.getTenantId()).thenReturn("1");
+		ResponseEntity<Map<String, String>> result = apService.loginProvision(apLoginRequest);
+
+		assertNull(result);
+		exception.expect( RuntimeException.class);
+		exception.expectMessage("failed to validate ap request");
+	}
+
+	@Test
+	public void creatAdminTestRemaininf() throws Exception{
+		WorkspaceEntity workspaceDto = getWorkspcaeDTO();
+		ApCreateRequest apCreateRequest = getApCreateRequest();
+
+		exception.expect(ResourceNotFoundException.class);
+		exception.expectMessage("Data not found for workspace");
+		Object webChatEntity = getWebChatEntity();
+		assertNotNull(workspaceDto);
+
+
+
+		when(authService.isExistsByEmailId("5")).thenReturn(true);
+		when(authService.isExistsByEmailId("5")).thenReturn(false);
+		ApResponse result = apService.createProvision(apCreateRequest);
+		assertEquals("email id exists", result);
+		assertNotNull(authService.isExistsByEmailId("5"));
+		exception.expect(BadRequestException.class);
+		exception.expectMessage("email id exists");
+		verify(authService, times(2)).isExistsByEmailId("5");
+		verify(authService, times(2)).isExistsByEmailId("5");
+	}
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
