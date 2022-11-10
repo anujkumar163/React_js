@@ -135,7 +135,69 @@ public void isExistByEmailAndTenantId() throws Exception {
 
 
 
-	
+	-------------------------------10-11-22------------------------------------------------------------------------
+	@Test
+	public void creatAdminTestRemaininf() throws Exception{
+		WorkspaceEntity workspaceDto = getWorkspcaeDTO();
+		ApCreateRequest apCreateRequest = getApCreateRequest();
+
+		exception.expect(ResourceNotFoundException.class);
+		exception.expectMessage("Data not found for workspace");
+		Object webChatEntity = getWebChatEntity();
+		assertNotNull(workspaceDto);
+
+
+
+		when(authService.isExistsByEmailId("5")).thenReturn(true);
+		when(authService.isExistsByEmailId("5")).thenReturn(false);
+		ApResponse result = apService.createProvision(apCreateRequest);
+		assertEquals("email id exists", result);
+		assertNotNull(authService.isExistsByEmailId("5"));
+		exception.expect(BadRequestException.class);
+		exception.expectMessage("email id exists");
+		verify(authService, times(2)).isExistsByEmailId("5");
+		verify(authService, times(2)).isExistsByEmailId("5");
+	}
+
+	@Test
+	public void test2() throws Exception {
+		WorkspaceEntity workspaceEntity = getWorkspcaeDTO();
+		Optional<WebChatEntity> webchatEntityy = Optional.of(getWebChatEntity());
+		String workspacekey = workspaceEntity.getWorkspaceKey();
+		WorkspaceAdminApprovalEntity workspaceAdminApprovalEntity = getWorkspaceAdminApprovalEntity();
+		List<WorkspaceEntity> workspaceEntities = new ArrayList<>();
+		workspaceEntities.add(workspaceEntity);
+		when(workspaceApprovalRepository.save(any())).thenReturn(workspaceAdminApprovalEntity);
+		when(workspaceService.joinWorkspaceByKeyAP(eq("Yeruva"), any(), eq(null))).thenReturn(workspacekey);
+		verify(workspaceService, times(1)).joinWorkspaceByKeyAP(eq("Yeruva"), any(), eq(null));
+		verify(workspaceApprovalRepository, times(1)).findByAdminUserDTOAndWorkspaceDTO(any(), eq(workspaceEntity));
+		when(workspaceService.joinWorkspaceByKeyAP(eq("Yeruva"), any(), eq(null))).thenThrow(Exception.class);
+		assertThrows(Exception.class, () -> workspaceService.joinWorkspaceByKeyAP(eq("Yeruva"), any(), eq(null)));
+
+
+	}
+
+	@Test
+	public void test3(){
+		WorkspaceEntity workspaceDto = getWorkspcaeDTO();
+		ApCreateRequest apCreateRequest = getApCreateRequest();
+		when(authService.isExistsByEmailId("5")).thenReturn(true);
+		when(authService.isExistsByEmailId("5")).thenReturn(false);
+		ApResponse result = apService.createProvision(apCreateRequest);
+		assertEquals("email id exists", result);
+		assertNotNull(authService.isExistsByEmailId("5"));
+		exception.expect(BadRequestException.class);
+		exception.expectMessage("email id exists");
+		verify(authService, times(2)).isExistsByEmailId("5");
+		verify(authService, times(2)).isExistsByEmailId("5");
+		when(authService.isExistsByEmailId("5")).thenThrow(RuntimeException.class);
+		assertThrows(BadRequestException.class, () -> authService.isExistsByEmailId("5"));
+
+
+	}
+
+
+
 	
 	
 	
