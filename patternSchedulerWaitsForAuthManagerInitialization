@@ -37,6 +37,38 @@ void patternSchedulerWithDataSourceAndTenant() {
     verify(autoCompleteService, times(2)).batchCreatePatternDataList(any());
 }
 
+//third method for optional
+@Test
+void patternSchedulerBatchCall() throws InterruptedException {
+    // Create a sample DataSource object
+    DataSource dataSource = new DataSource();
+    dataSource.setTenantId("sample_tenant_id");
+
+    // Create a sample map with the DataSource object
+    Map<String, DataSource> map = new HashMap<>();
+    map.put("sample_key", dataSource);
+
+    // Mock the TenantDataSourceManager to return the sample map
+    TenantDataSourceManager tenantDataSourceManager = mock(TenantDataSourceManager.class);
+    when(tenantDataSourceManager.getDataSourceMap()).thenReturn(Collections.singletonMap(ApiServerEnum.ADMIN_PORTAL_SERVER.getIntValue(), map));
+
+    // Set the TenantDataSourceManager instance to the AutocompleteScheduler class
+    ReflectionTestUtils.setField(autocompleteScheduler, "tenantDataSourceManager", tenantDataSourceManager);
+
+    // Set the useAutocomplete field to "Y"
+    ReflectionTestUtils.setField(autocompleteScheduler, "useAutocomplete", "Y");
+
+    // Mock the AuthManager to return that initialization has completed
+    AuthManager authManager = mock(AuthManager.class);
+    when(authManager.isInitializeCompleted()).thenReturn(true);
+    ReflectionTestUtils.setField(AuthManager.class, "instance", authManager);
+
+    // Call the patternSchedulerBatchCall method
+    autocompleteScheduler.patternSchedulerBatchCall();
+
+    // Verify that the batchCreatePatternDataList method of the AutoCompleteService was called with the correct arguments
+    verify(autoCompleteService, times(1)).batchCreatePatternDataList("sample_tenant_id");
+}
 
 
 
