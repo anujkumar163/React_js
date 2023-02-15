@@ -14,3 +14,32 @@ void patternSchedulerWaitsForAuthManagerInitialization() throws InterruptedExcep
     autocompleteScheduler.patternScheduler();
     verify(autoCompleteService, times(1)).batchCreatePatternDataList(any());
 }
+
+@Test
+public void testAutocompleteScheduler() throws Exception {
+    // Create mock dependencies
+    TenantDataSourceManager tenantDataSourceManagerMock = mock(TenantDataSourceManager.class);
+    AutoCompleteService autoCompleteServiceMock = mock(AutoCompleteService.class);
+    
+    // Create test data
+    int adminPortalServerId = ApiServerEnum.ADMIN_PORTAL_SERVER.getIntValue();
+    Map<Integer, DataSource> dataSourceMap = new HashMap<>();
+    DataSource dataSource = new DataSource("testTenantId", "testUrl", "testUsername", "testPassword");
+    dataSourceMap.put(adminPortalServerId, dataSource);
+    
+    // Stub the method calls for the dependencies
+    when(tenantDataSourceManagerMock.getDataSourceMap()).thenReturn(dataSourceMap);
+    doNothing().when(autoCompleteServiceMock).batchCreatePatternDataList(eq("testTenantId"));
+    
+    // Create the scheduler and set the dependencies
+    AutocompleteScheduler scheduler = new AutocompleteScheduler();
+    scheduler.autoCompleteService = autoCompleteServiceMock;
+    TenantDataSourceManager.setInstance(tenantDataSourceManagerMock);
+    
+    // Call the method to be tested
+    scheduler.patternScheduler();
+    
+    // Verify that the method calls were made correctly
+    verify(tenantDataSourceManagerMock).getDataSourceMap();
+    verify(autoCompleteServiceMock).batchCreatePatternDataList("testTenantId");
+}
