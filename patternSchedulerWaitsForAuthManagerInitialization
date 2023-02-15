@@ -1,0 +1,16 @@
+@Test
+void patternSchedulerWaitsForAuthManagerInitialization() throws InterruptedException {
+    ReflectionTestUtils.setField(autocompleteScheduler, "useAutocomplete", "Y");
+    AuthManager.getInstance().setInitializeCompleted(false);
+    Thread t = new Thread(() -> {
+        try {
+            Thread.sleep(5000);
+            AuthManager.getInstance().setInitializeCompleted(true);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    });
+    t.start();
+    autocompleteScheduler.patternScheduler();
+    verify(autoCompleteService, times(1)).batchCreatePatternDataList(any());
+}
