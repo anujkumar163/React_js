@@ -216,7 +216,22 @@ public class AutocompleteSchedulerTest {
 
 
 
+//test 5
 
+ @Test
+    public void testPatternScheduler() throws InterruptedException {
+        MockitoAnnotations.openMocks(this);
+        AutocompleteScheduler autocompleteScheduler = new AutocompleteScheduler();
+        autocompleteScheduler.autoCompleteService = autoCompleteService;
+        autocompleteScheduler.logger = logger;
+        autocompleteScheduler.useAutocomplete = "Y";
+        autocompleteScheduler.tenantDataSourceManager = tenantDataSourceManager;
+        autocompleteScheduler.authManager = authManager;
+        autocompleteScheduler.patternScheduler();
+
+        verify(autoCompleteService, times(1)).batchCreatePatternDataList(anyString());
+        verify(logger, times(2)).debug(anyString(), any(Timestamp.class));
+    }
 
 
 
