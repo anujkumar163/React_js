@@ -1,0 +1,58 @@
+import com.github.database.rider.core.api.connection.ConnectionHolder;
+import com.github.database.rider.core.api.dataset.DataSet;
+import com.github.database.rider.junit5.DBUnitExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+
+@SpringBootTest
+@EnableScheduling
+@ExtendWith(DBUnitExtension.class)
+public class AutocompleteSchedulerTest {
+
+    @Autowired
+    private AutocompleteScheduler autocompleteScheduler;
+
+    @Autowired
+    private ScheduledAnnotationBeanPostProcessor postProcessor;
+
+    @Autowired
+    private ThreadPoolTaskScheduler scheduler;
+
+    @Autowired
+    private ConnectionHolder connectionHolder;
+
+    @Test
+    @DataSet("datasets/autocomplete_scheduler_test.yml")
+    public void testPatternScheduler() {
+        // Given
+        // set the useAutocomplete to Y to enable autocomplete
+        autocompleteScheduler.setUseAutocomplete("Y");
+
+        // When
+        // execute the scheduled method
+        postProcessor.postProcessAfterInitialization(autocompleteScheduler, "com.sds.rpa.asset.application.job");
+        await().atMost(1, TimeUnit.MINUTES)
+                .pollInterval(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    // Then
+                    // verify that the scheduled method was executed at least once
+                    Long count = connectionHolder.getConnection()
+                            .createQuery("SELECT COUNT(*) FROM pattern_data WHERE tenant_id = :tenantId")
+                            .addParameter("tenantId", 1L)
+                            .executeScalar(Long.class);
+                    assertThat(count, notNullValue());
+                    assertThat(count, equalTo(10L));
+                });
+    }
+}
