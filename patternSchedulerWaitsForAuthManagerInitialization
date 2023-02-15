@@ -16,6 +16,33 @@ void patternSchedulerWaitsForAuthManagerInitialization() throws InterruptedExcep
 }
 
 @Test
+void patternSchedulerWithDataSourceAndTenant() {
+    // Mock the TenantDataSourceManager
+    TenantDataSourceManager tenantDataSourceManager = mock(TenantDataSourceManager.class);
+    when(tenantDataSourceManager.getDataSourceMap()).thenReturn(Map.of(
+        ApiServerEnum.ADMIN_PORTAL_SERVER.getIntValue(), Map.of(
+            "datasource1", new DataSource("tenant1"),
+            "datasource2", new DataSource("tenant2")
+        )
+    ));
+    ReflectionTestUtils.setField(autocompleteScheduler, "tenantDataSourceManager", tenantDataSourceManager);
+
+    // Mock the AutoCompleteService
+    doNothing().when(autoCompleteService).batchCreatePatternDataList(any());
+
+    // Call the method to be tested
+    autocompleteScheduler.patternScheduler();
+
+    // Verify that the batchCreatePatternDataList method was called for each tenant
+    verify(autoCompleteService, times(2)).batchCreatePatternDataList(any());
+}
+
+
+
+
+
+
+@Test
 public void testAutocompleteScheduler() throws Exception {
     // Create mock dependencies
     TenantDataSourceManager tenantDataSourceManagerMock = mock(TenantDataSourceManager.class);
