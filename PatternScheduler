@@ -1,0 +1,39 @@
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class AutocompleteSchedulerTest {
+
+    @Test
+    void testPatternScheduler() throws Exception {
+        // Mock the dependencies of the method
+        AuthManager authManager = mock(AuthManager.class);
+        when(authManager.isInitializeCompleted()).thenReturn(true);
+
+        DataSource dataSource = mock(DataSource.class);
+        when(dataSource.getTenantId()).thenReturn("testTenant");
+
+        Map<String, DataSource> dataSourceMap = new HashMap<>();
+        dataSourceMap.put("testKey", dataSource);
+
+        TenantDataSourceManager dataSourceManager = mock(TenantDataSourceManager.class);
+        when(dataSourceManager.getDataSourceMap()).thenReturn(dataSourceMap);
+
+        AutocompleteService autoCompleteService = mock(AutocompleteService.class);
+
+        TenantContext tenantContext = mock(TenantContext.class);
+
+        // Create the object to test
+        AutocompleteScheduler autocompleteScheduler = new AutocompleteScheduler(authManager, dataSourceManager, autoCompleteService, tenantContext);
+
+        // Call the method under test
+        autocompleteScheduler.patternScheduler();
+
+        // Verify that the method calls the necessary dependencies
+        verify(authManager, times(1)).isInitializeCompleted();
+        verify(dataSourceManager, times(1)).getDataSourceMap();
+        verify(dataSource, times(1)).getTenantId();
+        verify(tenantContext, times(1)).setTenant("testTenant");
+        verify(autoCompleteService, times(1)).batchCreatePatternDataList("testTenant");
+    }
+}
