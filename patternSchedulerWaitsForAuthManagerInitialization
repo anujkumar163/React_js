@@ -102,3 +102,123 @@ public void testAutocompleteScheduler() throws Exception {
     verify(tenantDataSourceManagerMock).getDataSourceMap();
     verify(autoCompleteServiceMock).batchCreatePatternDataList("testTenantId");
 }
+
+
+
+full code to test
+
+package com.sds.rpa.asset.application.job;
+
+import com.sds.rpa.asset.autocomplete.service.AutoCompleteService;
+import com.sds.rpa.common.constants.ApiServerEnum;
+import com.sds.rpa.common.database.config.TenantContext;
+import com.sds.rpa.common.tenant.manager.TenantDataSourceManager;
+import com.sds.rpa.lib.auth.manager.AuthManager;
+import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.springframework.scheduling.annotation.Scheduled;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@RunWith(MockitoJUnitRunner.class)
+public class AutocompleteSchedulerTest {
+
+    @Mock
+    private AutoCompleteService autoCompleteService;
+
+    @Mock
+    private Logger logger;
+
+    @InjectMocks
+    private AutocompleteScheduler autocompleteScheduler;
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void testPatternScheduler_whenUseAutocompleteIsN_shouldNotCallService() throws Exception {
+        autocompleteScheduler.useAutocomplete = "N";
+
+        autocompleteScheduler.patternScheduler();
+
+        verify(autoCompleteService, never()).batchCreatePatternDataList(anyString());
+    }
+
+    @Test
+    public void testPatternScheduler_whenUseAutocompleteIsY_shouldCallService() throws Exception {
+        autocompleteScheduler.useAutocomplete = "Y";
+
+        autocompleteScheduler.patternScheduler();
+
+        verify(autoCompleteService, atLeastOnce()).batchCreatePatternDataList(anyString());
+    }
+
+    @Test
+    public void testPatternScheduler_whenTenantExists_shouldCallServiceForEachTenant() throws Exception {
+        autocompleteScheduler.useAutocomplete = "Y";
+
+        String tenant1 = "tenant1";
+        String tenant2 = "tenant2";
+
+        Map<String, TenantDataSourceManager.DataSourceInfo> dataSourceMap = new HashMap<>();
+        dataSourceMap.put("1", new TenantDataSourceManager.DataSourceInfo("1", tenant1));
+        dataSourceMap.put("2", new TenantDataSourceManager.DataSourceInfo("2", tenant2));
+        TenantDataSourceManager.getInstance().setDataSourceMap(ApiServerEnum.ADMIN_PORTAL_SERVER.getIntValue(), dataSourceMap);
+
+        autocompleteScheduler.patternScheduler();
+
+        verify(autoCompleteService, times(1)).batchCreatePatternDataList(tenant1);
+        verify(autoCompleteService, times(1)).batchCreatePatternDataList(tenant2);
+    }
+
+    @Test
+    public void testPatternScheduler_whenTenantNotExists_shouldNotCallService() throws Exception {
+        autocompleteScheduler.useAutocomplete = "Y";
+
+        TenantDataSourceManager.getInstance().setDataSourceMap(ApiServerEnum.ADMIN_PORTAL_SERVER.getIntValue(), null);
+
+        autocompleteScheduler.patternScheduler();
+
+        verify(autoCompleteService, never()).batchCreatePatternDataList(anyString());
+    }
+
+    @Test
+    public void testPatternScheduler_whenAuthManagerNotInitialized_shouldRetry() throws Exception {
+        autocompleteScheduler.useAutocomplete = "Y";
+
+        when(AuthManager.getInstance().isInitializeCompleted()).thenReturn(false).thenReturn(false).thenReturn(true);
+
+        autocompleteScheduler.patternScheduler();
+
+        verify(AuthManager.getInstance(), times(3)).isInitializeCompleted();
+        verify(autoCompleteService, atLeastOnce()).batchCreatePatternDataList(anyString());
+    }
+
+    @Test
+
+
+
+
+
+
+
+
+
