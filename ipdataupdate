@@ -16,3 +16,31 @@ class ipDataUpdate
         assertFalse(saveDocument(element, new File("nonexistent")));
     }
 }
+
+
+Second try
+
+
+    @Test
+    void testSaveDocument() throws TransformerException, ParserConfigurationException {
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document document = documentBuilder.newDocument();
+        Element element = document.createElement("test");
+        File xmlFile = new File("test.xml");
+
+        assertFalse(saveDocument(null, xmlFile));
+        assertFalse(saveDocument(element, null));
+        assertFalse(saveDocument(element, new File("nonexistent")));
+        assertTrue(saveDocument(element, xmlFile));
+        assertTrue(xmlFile.isFile());
+        xmlFile.delete();
+    }
+
+    private static boolean saveDocument(Element element, File xmlFile) {
+        boolean result = false;
+        if (xmlFile == null || !xmlFile.isFile() || element == null) {
+            return result;
+        }
+
+        // Rest of the code for the saveDocument method...
+    }
