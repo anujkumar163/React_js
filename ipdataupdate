@@ -44,3 +44,32 @@ Second try
 
         // Rest of the code for the saveDocument method...
     }
+
+
+Third case
+
+@Test
+public void testSaveDocument() throws Exception {
+    // Create a temporary file for testing
+    File xmlFile = File.createTempFile("test", ".xml");
+
+    // Create a sample XML element to save
+    DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+    Document doc = docBuilder.newDocument();
+    Element rootElement = doc.createElement("root");
+    doc.appendChild(rootElement);
+
+    // Save the XML element to the temporary file
+    boolean result = new IpaDataUpdate().saveDocument(xmlFile, rootElement);
+
+    // Assert that the save operation was successful
+    assertTrue(result);
+
+    // Assert that the temporary file was created and is not empty
+    assertTrue(xmlFile.exists());
+    assertTrue(xmlFile.length() > 0);
+
+    // Delete the temporary file
+    xmlFile.delete();
+}
