@@ -1,0 +1,18 @@
+class ipDataUpdate
+
+ @Test
+    void testSaveDocument(@TempDir Path tempDir) throws TransformerException, IOException, ParserConfigurationException {
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document document = documentBuilder.newDocument();
+        Element element = document.createElement("test");
+
+        // Create a temporary file in the temporary directory
+        File xmlFile = tempDir.resolve("test.xml").toFile();
+
+        assertTrue(saveDocument(element, xmlFile));
+        assertTrue(Files.exists(xmlFile.toPath()));
+        assertFalse(saveDocument(null, xmlFile));
+        assertFalse(saveDocument(element, null));
+        assertFalse(saveDocument(element, new File("nonexistent")));
+    }
+}
