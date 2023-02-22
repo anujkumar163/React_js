@@ -155,4 +155,84 @@ full coverage check
         assertFalse(update.updateAttribute(element, null, updateData));
     }
 
+ five attempt
 
+
+ @Test
+    public void saveDocumentTest() throws ParserConfigurationException, IOException, SAXException {
+        // Arrange
+        File xmlFile = new File("test.xml");
+        xmlFile.createNewFile();
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.newDocument();
+        Element rootElement = document.createElement("root");
+        document.appendChild(rootElement);
+        IpaDataUpdate ipaDataUpdate = new IpaDataUpdate();
+
+        // Act
+        boolean result = ipaDataUpdate.saveDocument(rootElement, xmlFile);
+
+        // Assert
+        assertTrue(result);
+        assertTrue(xmlFile.isFile());
+
+        // Cleanup
+        xmlFile.delete();
+    }
+
+    @Test
+    public void saveDocumentTestWithNullFile() throws ParserConfigurationException {
+        // Arrange
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.newDocument();
+        Element rootElement = document.createElement("root");
+        document.appendChild(rootElement);
+        IpaDataUpdate ipaDataUpdate = new IpaDataUpdate();
+
+        // Act
+        boolean result = ipaDataUpdate.saveDocument(rootElement, null);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    public void saveDocumentTestWithNonExistentFile() throws ParserConfigurationException {
+        // Arrange
+        File xmlFile = new File("test.xml");
+        xmlFile.delete();
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.newDocument();
+        Element rootElement = document.createElement("root");
+        document.appendChild(rootElement);
+        IpaDataUpdate ipaDataUpdate = new IpaDataUpdate();
+
+        // Act
+        boolean result = ipaDataUpdate.saveDocument(rootElement, xmlFile);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    public void saveDocumentTestWithNullElement() throws ParserConfigurationException, IOException, SAXException {
+        // Arrange
+        File xmlFile = new File("test.xml");
+        xmlFile.createNewFile();
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.newDocument();
+        IpaDataUpdate ipaDataUpdate = new IpaDataUpdate();
+
+        // Act
+        boolean result = ipaDataUpdate.saveDocument(null, xmlFile);
+
+        // Assert
+        assertFalse(result);
+
+        // Cleanup
+        xmlFile.delete();
+    }
