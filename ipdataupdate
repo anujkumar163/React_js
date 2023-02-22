@@ -73,3 +73,86 @@ public void testSaveDocument() throws Exception {
     // Delete the temporary file
     xmlFile.delete();
 }
+
+full coverage check
+
+ @Test
+    void testConstructorNullUpdateData() {
+        IpaDataUpdate update = new IpaDataUpdate(null);
+        assertNotNull(update.updateData);
+        assertTrue(update.updateData.isEmpty());
+    }
+
+    @Test
+    void testConstructorNonNullUpdateData() {
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("id1", new HashMap<>());
+        updateData.put("id2", new HashMap<>());
+        IpaDataUpdate update = new IpaDataUpdate(updateData);
+        assertEquals(updateData, update.updateData);
+    }
+
+    @Test
+    void testGetObject() {
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("id1", new HashMap<>());
+        updateData.put("id2", new HashMap<>());
+        IpaDataUpdate update = new IpaDataUpdate(updateData);
+        Object obj = update.getObject("id1");
+        assertNotNull(obj);
+        assertTrue(obj instanceof Map);
+    }
+
+    @Test
+    void testAppendDataNewObject() {
+        Map<String, Object> updateData = new HashMap<>();
+        IpaDataUpdate update = new IpaDataUpdate(updateData);
+        update.appendData("id1", "key1", "value1");
+        assertTrue(updateData.containsKey("id1"));
+        Map<String, Object> objData = (Map<String, Object>) updateData.get("id1");
+        assertTrue(objData.containsKey("key1"));
+        assertEquals("value1", objData.get("key1"));
+    }
+
+    @Test
+    void testAppendDataExistingObject() {
+        Map<String, Object> objData = new HashMap<>();
+        objData.put("key1", "value1");
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("id1", objData);
+        IpaDataUpdate update = new IpaDataUpdate(updateData);
+        update.appendData("id1", "key2", "value2");
+        assertEquals(2, objData.size());
+        assertTrue(objData.containsKey("key2"));
+        assertEquals("value2", objData.get("key2"));
+    }
+
+    @Test
+    void testUpdateAttribute() {
+        Element element = new DocumentStub().createElement("test");
+        element.setAttribute("key1", "oldValue");
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("key1", "newValue");
+        IpaDataUpdate update = new IpaDataUpdate(null);
+        assertTrue(update.updateAttribute(element, "key1", updateData));
+        assertEquals("newValue", element.getAttribute("key1"));
+    }
+
+    @Test
+    void testUpdateAttributeNullElement() {
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("key1", "newValue");
+        IpaDataUpdate update = new IpaDataUpdate(null);
+        assertFalse(update.updateAttribute(null, "key1", updateData));
+    }
+
+    @Test
+    void testUpdateAttributeNullKey() {
+        Element element = new DocumentStub().createElement("test");
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("key1", "newValue");
+        IpaDataUpdate update = new IpaDataUpdate(null);
+        assertFalse(update.updateAttribute(element, null, updateData));
+    }
+
+
