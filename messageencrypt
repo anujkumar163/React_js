@@ -219,6 +219,24 @@ public void testDecryptMessageV2WithDataMessageType() {
 
 
 
+/////////////////8/////////////////////8/////////////////////////
+
+@Test
+public void testDecryptMessageV2WithDataMessageType() {
+    // Arrange
+    String plainPsId = "test-id";
+    String messageType = QueueMessageTypeEnum.DATA.name();
+    byte[] message = Base64.getEncoder().encode("secret message".getBytes());
+    byte[] key = SecureQueueKeyGenerator.getMessageByteKey(plainPsId, messageType);
+    byte[] decryptedMessage = "secret message".getBytes();
+    SecureQueueServiceImpl service = new SecureQueueServiceImpl();
+
+    // Act
+    byte[] result = service.decryptMessageV2(message, plainPsId, messageType);
+
+    // Assert
+    assertArrayEquals(decryptedMessage, result);
+}
 
 
 
