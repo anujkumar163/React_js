@@ -304,6 +304,7 @@ class MyTestClass {
     }
 }
 
+///////////////////////////last code method ///////////////////////////////////////////////////
 
 public void checkEncryptedData(byte[] message, String plainPsId, String messageType) {
         byte[] decodedMessage = QueueMessageTypeEnum.DATA.name().equals(messageType) ? Base64.getDecoder().decode(message) : message;
@@ -321,6 +322,121 @@ public void checkEncryptedData(byte[] message, String plainPsId, String messageT
             }
         }
     }
+
+/////////////////////last method ////////////////////////////////////////////////end end //////////////////////////////////
+
+10 method try
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import java.util.Base64;
+
+public class MyTestClass {
+
+    @Test
+    void testCheckEncryptedDataWithDataMessage() {
+        // given
+        String messageType = QueueMessageTypeEnum.DATA.name();
+        String plainPsId = "plainPsId";
+        byte[] message = "message".getBytes();
+
+        // when
+        new MyTestClass().checkEncryptedData(message, plainPsId, messageType);
+
+        // then
+        // assert that the decryption was successful and no exception was thrown
+    }
+
+    @Test
+    void testCheckEncryptedDataWithFileMessage() {
+        // given
+        String messageType = QueueMessageTypeEnum.FILE.name();
+        String plainPsId = "plainPsId";
+        byte[] message = "message".getBytes();
+
+        // when
+        Assertions.assertThrows(RPAServiceException.class, () -> new MyTestClass().checkEncryptedData(message, plainPsId, messageType));
+
+        // then
+        // assert that the expected exception was thrown
+    }
+
+    @Test
+    void testCheckEncryptedDataWithDecryptErrorResult() {
+        // given
+        String messageType = QueueMessageTypeEnum.OTHER.name(); // any value except DATA or FILE
+        String plainPsId = "plainPsId";
+        byte[] message = "message".getBytes();
+        RPAServiceException ex = new RPAServiceException(ResultCodeEnum.DECRYPT_ERROR);
+
+        // when
+        new MyTestClass() {
+            @Override
+            void decryptMessage(byte[] decodedMessage, byte[] messageByteKey) throws RPAServiceException {
+                throw ex;
+            }
+        }.checkEncryptedData(message, plainPsId, messageType);
+
+        // then
+        // assert that the alternate decryption keys were used and the decryption was successful
+    }
+
+    @Test
+    void testCheckEncryptedDataWithDecryptErrorResultAndV2SecurityToken() {
+        // given
+        String messageType = QueueMessageTypeEnum.OTHER.name(); // any value except DATA or FILE
+        String plainPsId = "plainPsId";
+        byte[] message = "message".getBytes();
+        RPAServiceException ex = new RPAServiceException(ResultCodeEnum.DECRYPT_ERROR);
+
+        // when
+        new MyTestClass() {
+            @Override
+            boolean isSecurityTokenV2() {
+                return true;
+            }
+
+            @Override
+            void decryptMessage(byte[] decodedMessage, byte[] messageByteKey) throws RPAServiceException {
+                throw ex;
+            }
+        }.checkEncryptedData(message, plainPsId, messageType);
+
+        // then
+        // assert that the alternate decryption key for text messages was used and the decryption was successful
+    }
+
+    @Test
+    void testCheckEncryptedDataWithDecryptErrorResultAndNonAsciiPsId() {
+        // given
+        String messageType = QueueMessageTypeEnum.OTHER.name(); // any value except DATA or FILE
+        String plainPsId = "plainPsId";
+        byte[] message = "message".getBytes(Charsets.UTF_8);
+        RPAServiceException ex = new RPAServiceException(ResultCodeEnum.DECRYPT_ERROR);
+
+        // when
+        new MyTestClass() {
+            @Override
+            void decryptMessage(byte[] decodedMessage, byte[] messageByteKey) throws RPAServiceException {
+                throw ex;
+            }
+        }.checkEncryptedData(message, plainPsId, messageType);
+
+        // then
+        // assert that the alternate decryption key for byte messages was used and the decryption was successful
+    }
+
+    private static class MyTestClass {
+        void check
+
+
+
+
+
+
+
+
+
 
 
 
