@@ -110,6 +110,39 @@ public void testDecryptMessage() throws Exception {
     assertArrayEquals(expectedDecryptedBody, actualDecryptedBody);
 }
 
+6 attempt
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import java.util.Base64;
+
+public class MyClassTest {
+
+    @Test
+    public void testDecryptMessageV2() {
+        MyClass myClass = new MyClass();
+
+        // Test case 1: Valid input with plain text message
+        String plainTextMessage = "Hello World!";
+        String plainPsId = "ps-id";
+        String messageType = "DATA";
+        byte[] encryptedMessage = myClass.encryptMessageV2(plainTextMessage.getBytes(), plainPsId, messageType);
+        byte[] decryptedMessage = myClass.decryptMessageV2(encryptedMessage, plainPsId, messageType);
+        Assertions.assertEquals(plainTextMessage, new String(decryptedMessage));
+
+        // Test case 2: Valid input with base64 encoded message
+        String base64EncodedMessage = Base64.getEncoder().encodeToString("Hello World!".getBytes());
+        encryptedMessage = myClass.encryptMessageV2(base64EncodedMessage.getBytes(), plainPsId, messageType);
+        decryptedMessage = myClass.decryptMessageV2(encryptedMessage, plainPsId, messageType);
+        Assertions.assertEquals(base64EncodedMessage, new String(decryptedMessage));
+
+        // Test case 3: Invalid input with invalid messageType
+        messageType = "INVALID_TYPE";
+        encryptedMessage = myClass.encryptMessageV2(plainTextMessage.getBytes(), plainPsId, messageType);
+        decryptedMessage = myClass.decryptMessageV2(encryptedMessage, plainPsId, messageType);
+        Assertions.assertNull(decryptedMessage);
+    }
+}
 
 
 
