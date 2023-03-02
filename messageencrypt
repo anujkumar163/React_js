@@ -241,6 +241,20 @@ public void testDecryptMessageV2WithDataMessageType() {
 
 
 
+////////9///////////////////9//////////////////////9///////////////////////
+
+@Test
+public void testDecryptMessageV2WithDataMessageType() {
+    String message = "VGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ=="; // "This is a test message"
+    String plainPsId = "test-plainPsId";
+    String messageType = QueueMessageTypeEnum.DATA.name();
+    byte[] encryptedMessage = secureQueue.encryptMessageV2(message.getBytes(), plainPsId, messageType);
+
+    byte[] decryptedMessage = secureQueue.decryptMessageV2(Base64.getEncoder().encode(encryptedMessage), plainPsId, messageType);
+    String decryptedMessageStr = new String(decryptedMessage);
+
+    assertEquals("Decrypted message does not match original message", message, decryptedMessageStr);
+}
 
 
 
