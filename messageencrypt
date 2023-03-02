@@ -178,6 +178,44 @@ class YourClassTest {
 }
 
 
+/////////////////////8 attempt???????????????????????????????
+
+@Test
+public void testDecryptMessageV2WithDataMessageType() {
+    // Create a mock SecureQueueKeyGenerator
+    SecureQueueKeyGenerator keyGenerator = mock(SecureQueueKeyGenerator.class);
+    when(keyGenerator.getMessageByteKey("testPlainPsId", QueueMessageTypeEnum.DATA.name())).thenReturn("testKey".getBytes());
+
+    // Create a mock Cipher instance
+    Cipher cipher = mock(Cipher.class);
+    when(cipher.doFinal(any(byte[].class))).thenReturn("testDecryptedData".getBytes());
+
+    // Create a mock Base64 decoder
+    Base64.Decoder decoder = mock(Base64.Decoder.class);
+    when(decoder.decode("testEncodedData")).thenReturn("testData".getBytes());
+
+    // Create a mock instance of the SecureQueueService and set its dependencies
+    SecureQueueService secureQueueService = new SecureQueueService();
+    secureQueueService.setCipher(cipher);
+    secureQueueService.setDecoder(decoder);
+    secureQueueService.setKeyGenerator(keyGenerator);
+
+    // Call the decryptMessageV2 method with data message type and encoded data
+    byte[] decryptedMessage = secureQueueService.decryptMessageV2("testEncodedData".getBytes(), "testPlainPsId", QueueMessageTypeEnum.DATA.name());
+
+    // Verify that the key generator was called with the correct arguments
+    verify(keyGenerator).getMessageByteKey("testPlainPsId", QueueMessageTypeEnum.DATA.name());
+
+    // Verify that the Base64 decoder was called with the correct argument
+    verify(decoder).decode("testEncodedData");
+
+    // Verify that the Cipher instance was called with the correct arguments
+    verify(cipher).init(eq(Cipher.DECRYPT_MODE), any(SecretKey.class));
+    verify(cipher).doFinal("testData".getBytes());
+
+    // Verify that the decrypted message is correct
+    assertArrayEquals("testDecryptedData".getBytes(), decryptedMessage);
+}
 
 
 
