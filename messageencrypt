@@ -256,6 +256,30 @@ public void testDecryptMessageV2WithDataMessageType() {
     assertEquals("Decrypted message does not match original message", message, decryptedMessageStr);
 }
 
+------------------10 -----------------------------------------
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Base64;
+
+public class MessageDecrypterTest {
+
+    @Test
+    public void testDecryptMessageV2() {
+        // Setup
+        byte[] message = Base64.getEncoder().encode("Secret message".getBytes());
+        String plainPsId = "Alice";
+        String messageType = "DATA";
+        MessageDecrypter decrypter = new MessageDecrypter();
+
+        // Execute
+        byte[] decryptedMessage = decrypter.decryptMessageV2(message, plainPsId, messageType);
+
+        // Verify
+        Assertions.assertEquals("Secret message", new String(decryptedMessage));
+    }
+}
 
 
 
