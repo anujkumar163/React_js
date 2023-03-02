@@ -145,6 +145,37 @@ public class MyClassTest {
 }
 
 
+7 attempt
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class YourClassTest {
+
+    @Test
+    void testDecryptMessageV2WithDataMessageType() {
+        String plainPsId = "testPlainPsId";
+        String messageType = "DATA";
+        byte[] message = "VGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ==".getBytes(); // "This is a test message" in base64
+
+        YourClass yourClass = new YourClass();
+        byte[] decryptedMessage = yourClass.decryptMessageV2(message, plainPsId, messageType);
+
+        assertEquals("This is a test message", new String(decryptedMessage));
+    }
+
+    @Test
+    void testDecryptMessageV2WithOtherMessageType() {
+        String plainPsId = "testPlainPsId";
+        String messageType = "OTHER";
+        byte[] message = "VGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ==".getBytes(); // "This is a test message" in base64
+
+        YourClass yourClass = new YourClass();
+        byte[] decryptedMessage = yourClass.decryptMessageV2(message, plainPsId, messageType);
+
+        assertEquals("This is a test message", new String(decryptedMessage));
+    }
+}
 
 
 
