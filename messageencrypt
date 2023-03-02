@@ -281,6 +281,28 @@ public class MessageDecrypterTest {
     }
 }
 
+///////  1111////////////////////
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class MyTestClass {
+    
+    @Test
+    void testDecryptMessageV2() {
+        // Set up test data
+        byte[] encryptedMessage = new byte[] {0x12, 0x34, 0x56, 0x78};
+        String plainPsId = "recipient@example.com";
+        String messageType = "DATA";
+        MyEncryptionClass myEncryptionClass = new MyEncryptionClass();
+        
+        // Call the method being tested
+        byte[] decryptedMessage = myEncryptionClass.decryptMessageV2(encryptedMessage, plainPsId, messageType);
+        
+        // Check that the decrypted message is correct
+        assertArrayEquals(new byte[] {0xAB, 0xCD, 0xEF}, decryptedMessage);
+    }
+}
 
 
 
