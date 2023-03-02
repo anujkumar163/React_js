@@ -18,4 +18,14 @@ You can write similar test cases for other uncovered lines in the class. The goa
 
 
 
-
+second try
+@Test
+public void testDecryptMessageV2WithValidBase64EncodedMessage() {
+    SecureQueue secureQueue = new SecureQueue();
+    String plainPsId = "PS001";
+    String messageType = "DATA";
+    String message = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+    byte[] expectedDecryptedMessage = "Hello World".getBytes();
+    byte[] actualDecryptedMessage = secureQueue.decryptMessageV2(Base64.getEncoder().encode(message.getBytes()), plainPsId, messageType);
+    assertArrayEquals(expectedDecryptedMessage, actualDecryptedMessage);
+}
