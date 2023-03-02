@@ -29,3 +29,126 @@ public void testDecryptMessageV2WithValidBase64EncodedMessage() {
     byte[] actualDecryptedMessage = secureQueue.decryptMessageV2(Base64.getEncoder().encode(message.getBytes()), plainPsId, messageType);
     assertArrayEquals(expectedDecryptedMessage, actualDecryptedMessage);
 }
+
+
+
+third try
+
+
+testcase one
+@Test
+public void testDecryptMessageV2WithValidBase64EncodedMessage() {
+    SecureQueue secureQueue = new SecureQueue();
+    String plainPsId = "PS001";
+    String messageType = "DATA";
+    String message = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+    byte[] expectedDecryptedMessage = "Hello World".getBytes();
+    byte[] actualDecryptedMessage = secureQueue.decryptMessageV2(Base64.getEncoder().encode(message.getBytes()), plainPsId, messageType);
+    assertArrayEquals(expectedDecryptedMessage, actualDecryptedMessage);
+}
+
+testcase two
+
+@Test
+public void testDecryptMessageV2WithValidPlainTextMessage() {
+    SecureQueue secureQueue = new SecureQueue();
+    String plainPsId = "PS002";
+    String messageType = "COMMAND";
+    String message = "Execute task";
+    byte[] expectedDecryptedMessage = message.getBytes();
+    byte[] actualDecryptedMessage = secureQueue.decryptMessageV2(message.getBytes(), plainPsId, messageType);
+    assertArrayEquals(expectedDecryptedMessage, actualDecryptedMessage);
+}
+
+testcase three
+
+@Test(expected = IllegalArgumentException.class)
+public void testDecryptMessageV2WithInvalidMessageType() {
+    SecureQueue secureQueue = new SecureQueue();
+    String plainPsId = "PS003";
+    String messageType = "INVALID";
+    String message = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+    secureQueue.decryptMessageV2(Base64.getEncoder().encode(message.getBytes()), plainPsId, messageType);
+}
+
+4
+@Test(expected = IllegalArgumentException.class)
+public void testDecryptMessageV2WithInvalidMessageByteKey() {
+    SecureQueue secureQueue = new SecureQueue();
+    String plainPsId = "PS004";
+    String messageType = "STATUS";
+    String message = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+    secureQueue.decryptMessageV2(Base64.getEncoder().encode(message.getBytes()), null);
+}
+
+5
+
+@Test(expected = NullPointerException.class)
+public void testDecryptMessageV2WithNullMessage() {
+    SecureQueue secureQueue = new SecureQueue();
+    String plainPsId = "PS005";
+    String messageType = "ALERT";
+    secureQueue.decryptMessageV2(null, SecureQueueKeyGenerator.getMessageByteKey(plainPsId, messageType));
+}
+
+
+lastmethod code 
+
+@Test
+public void testDecryptMessage() throws Exception {
+    byte[] message = "encrypted message".getBytes();
+    byte[] encryptKey = "encryption key".getBytes();
+
+    byte[] expectedDecryptedBody = "decrypted message".getBytes();
+
+    ICipher cipher = mock(ICipher.class);
+    when(cipher.decrypt(message)).thenReturn(expectedDecryptedBody);
+
+    byte[] actualDecryptedBody = new MyClass().decryptMessage(message, encryptKey);
+
+    verify(cipher).decrypt(message);
+    assertArrayEquals(expectedDecryptedBody, actualDecryptedBody);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
