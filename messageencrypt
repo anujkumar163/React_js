@@ -1,0 +1,21 @@
+@Test
+public void testEncryptMessage() {
+    // Arrange
+    SecureQueueSupportServiceImpl service = new SecureQueueSupportServiceImpl();
+    byte[] message = "test message".getBytes(StandardCharsets.UTF_8);
+    String plainPsId = "password123";
+
+    // Act
+    byte[] encryptedMessage = service.encryptMessage(message, plainPsId);
+
+    // Assert
+    assertNotNull(encryptedMessage);
+    assertNotEquals(0, encryptedMessage.length);
+}
+In this test case, we create an instance of the SecureQueueSupportServiceImpl class and call the encryptMessage method with some test data. We then check that the output is not null and that it has a length greater than 0.
+
+You can write similar test cases for other uncovered lines in the class. The goal is to ensure that all the code is covered by the test cases and that the class functions correctly under different scenarios.
+
+
+
+
