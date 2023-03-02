@@ -305,7 +305,22 @@ class MyTestClass {
 }
 
 
-
+public void checkEncryptedData(byte[] message, String plainPsId, String messageType) {
+        byte[] decodedMessage = QueueMessageTypeEnum.DATA.name().equals(messageType) ? Base64.getDecoder().decode(message) : message;
+        try{
+            decryptMessage(decodedMessage, SecureQueueKeyGenerator.getMessageByteKey(plainPsId, messageType));
+        }catch (RPAServiceException ex){
+            if(!QueueMessageTypeEnum.FILE.name().equals(messageType) && ResultCodeEnum.DECRYPT_ERROR.equals(ex.getResult())){
+                if( SecureQueueKeyGenerator.isSecurityTokenV2()){
+                    decryptMessage(decodedMessage, SecureQueueKeyGenerator.getTextMessageByteKey(plainPsId));
+                }else{
+                    decryptMessage(decodedMessage, SecureQueueKeyGenerator.getByteMessageByteKey(plainPsId.getBytes(Charsets.US_ASCII)));
+                }
+            }else{
+                throw ex;
+            }
+        }
+    }
 
 
 
