@@ -922,6 +922,46 @@ class ExampleTest {
 
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class ExampleServiceTest {
+
+    private final Encryptor encryptor = mock(Encryptor.class);
+    private final ExampleService exampleService = new ExampleService(encryptor);
+
+    @Test
+    void testEncryptQueuePassword() throws Exception {
+        String plainPsId = "password123";
+        String encryptedPassword = "encrypted123";
+        
+        // Mock the encryptor.encrypt() method to return the expected encrypted password
+        when(encryptor.encrypt(plainPsId)).thenReturn(encryptedPassword);
+
+        // Test with valid input
+        String result = exampleService.encryptQueuePassword(plainPsId);
+        assertEquals(encryptedPassword, result);
+
+        // Test with invalid input (null)
+        assertThrows(RPAServiceException.class, () -> {
+            exampleService.encryptQueuePassword(null);
+        });
+
+        // Test with invalid input (empty string)
+        assertThrows(RPAServiceException.class, () -> {
+            exampleService.encryptQueuePassword("");
+        });
+
+        // Test with invalid input (encryptor throws exception)
+        when(encryptor.encrypt(anyString())).thenThrow(Exception.class);
+        assertThrows(RPAServiceException.class, () -> {
+            exampleService.encryptQueuePassword(plainPsId);
+        });
+    }
+}
 
 
 
