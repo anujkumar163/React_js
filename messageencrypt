@@ -964,6 +964,36 @@ public class ExampleServiceTest {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class YourClassNameTest {
+
+    @Test
+    void testEncryptQueuePassword() {
+        YourClassName obj = new YourClassName();
+        String plainPsId = "password123";
+        String encryptedPsId = obj.encryptQueuePassword(plainPsId);
+        
+        // Ensure that the result is not null or empty
+        Assertions.assertNotNull(encryptedPsId);
+        Assertions.assertFalse(encryptedPsId.isEmpty());
+        
+        // Ensure that the decrypted password matches the original password
+        String decryptedPsId = obj.decryptQueuePassword(encryptedPsId);
+        Assertions.assertEquals(plainPsId, decryptedPsId);
+        
+        // Test with null input
+        Assertions.assertThrows(RPAServiceException.class, () -> obj.encryptQueuePassword(null),
+            "Input must not be null.");
+        
+        // Test with empty input
+        Assertions.assertThrows(RPAServiceException.class, () -> obj.encryptQueuePassword(""),
+            "Input must not be null.");
+    }
+}
 
 
 
