@@ -470,6 +470,45 @@ class YourTestClass {
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.jupiter.api.Test;
+
+import java.util.Base64;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+public class SecureQueueTest {
+
+    @Test
+    public void testCheckEncryptedData() throws Exception {
+        // mock dependencies
+        byte[] encryptedMessage = Base64.getEncoder().encode("Hello, world!".getBytes());
+        String psId = "test_ps_id";
+        String messageType = "DATA";
+        byte[] messageKey = new byte[16];
+        SecureQueueKeyGenerator mockKeyGenerator = mock(SecureQueueKeyGenerator.class);
+        when(mockKeyGenerator.getMessageByteKey(psId, messageType)).thenReturn(messageKey);
+
+        // create object under test
+        SecureQueue secureQueue = new SecureQueue(mockKeyGenerator);
+
+        // test with valid message
+        secureQueue.checkEncryptedData(encryptedMessage, psId, messageType);
+        verify(secureQueue, times(1)).decryptMessage(eq(Base64.getDecoder().decode(encryptedMessage)), eq(messageKey));
+
+        // test with invalid message type and security token v2
+        when(mockKeyGenerator.isSecurityTokenV2()).thenReturn(true);
+        assertThrows(RPAServiceException.class, () -> secureQueue.checkEncryptedData(encryptedMessage, psId, "INVALID_TYPE"));
+        verify(secureQueue, times(1)).decryptMessage(eq(Base64.getDecoder().decode(encryptedMessage)), eq(mockKeyGenerator.getTextMessageByteKey(psId)));
+
+        // test with invalid message type and security token v1
+        when(mockKeyGenerator.isSecurityTokenV2()).thenReturn(false);
+        assertThrows(RPAServiceException.class, () -> secureQueue.checkEncryptedData(encryptedMessage, psId, "INVALID_TYPE"));
+        verify(secureQueue, times(1)).decryptMessage(eq(Base64.getDecoder().decode(encryptedMessage)), eq(mockKeyGenerator.getByteMessageByteKey(psId.getBytes(Charsets.US_ASCII))));
+    }
+}
 
 
 
