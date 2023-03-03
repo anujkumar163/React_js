@@ -617,6 +617,46 @@ public class SecureQueueTest {
 
 
 
+///////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import java.util.Base64;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class SecureQueueTest {
+
+    @Mock
+    private AES128Cipher aes128Cipher;
+
+    @InjectMocks
+    private SecureQueue secureQueue;
+
+    @Test
+    public void testDecryptMessageV2() {
+        byte[] message = "encrypted message".getBytes();
+        String plainPsId = "plain password";
+        String messageType = "DATA";
+        byte[] keyBytes = "key bytes".getBytes();
+        byte[] decryptedMessage = "decrypted message".getBytes();
+
+        when(SecureQueueKeyGenerator.getMessageByteKey(plainPsId, messageType)).thenReturn(keyBytes);
+        when(aes128Cipher.decrypt(any())).thenReturn(decryptedMessage);
+
+        try {
+            byte[] result = secureQueue.decryptMessageV2(message, plainPsId, messageType);
+            assertEquals(decryptedMessage, result);
+        } catch (RPAServiceException e) {
+            LOGGER.error("Decryption error: " + e.getMessage());
+            throw e;
+        }
+    }
+}
 
 
 
