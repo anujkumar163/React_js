@@ -783,6 +783,83 @@ public class PasswordCheckerTest {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import static org.mockito.Mockito.*;
+
+class ExampleTest {
+
+    @Mock
+    private QueueService queueService;
+
+    private Example example;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        example = new Example(queueService);
+    }
+
+    @Test
+    void testIsCorrectPassword() throws Exception {
+        QueueInfo queueInfo = new QueueInfo("testQueue", encryptPassword("password123"));
+
+        when(queueService.getQueueInfo("testQueue")).thenReturn(queueInfo);
+
+        boolean result = example.isCorrectPassword("password123", "testQueue");
+
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_NullParams() {
+        Assertions.assertThrows(RPAServiceException.class, () -> example.isCorrectPassword(null, null));
+    }
+
+    @Test
+    void testIsCorrectPassword_NullPassword() {
+        Assertions.assertThrows(RPAServiceException.class, () -> example.isCorrectPassword(null, "testQueue"));
+    }
+
+    @Test
+    void testIsCorrectPassword_NullQueueName() {
+        Assertions.assertThrows(RPAServiceException.class, () -> example.isCorrectPassword("password123", null));
+    }
+
+    @Test
+    void testIsCorrectPassword_InvalidEncryptedPassword() throws Exception {
+        QueueInfo queueInfo = new QueueInfo("testQueue", "invalidEncryptedPassword");
+
+        when(queueService.getQueueInfo("testQueue")).thenReturn(queueInfo);
+
+        boolean result = example.isCorrectPassword("password123", "testQueue");
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_IncorrectPassword() throws Exception {
+        QueueInfo queueInfo = new QueueInfo("testQueue", encryptPassword("password123"));
+
+        when(queueService.getQueueInfo("testQueue")).thenReturn(queueInfo);
+
+        boolean result = example.isCorrectPassword("wrongPassword", "testQueue");
+
+        Assertions.assertFalse(result);
+    }
+
+    private String encryptPassword(String password) throws Exception {
+        // Replace this with your own encryption method if needed
+        return password;
+    }
+}
 
 
 
