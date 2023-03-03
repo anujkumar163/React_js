@@ -705,6 +705,82 @@ public class PasswordTest {
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import static org.mockito.Mockito.when;
+
+public class PasswordCheckerTest {
+
+    @Mock
+    private QueueService queueService;
+
+    @InjectMocks
+    private PasswordChecker passwordChecker;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void testIsCorrectPasswordWithNullParams() {
+        Assertions.assertThrows(RPAServiceException.class, () -> {
+            passwordChecker.isCorrectPassword(null, "queueName");
+        });
+        Assertions.assertThrows(RPAServiceException.class, () -> {
+            passwordChecker.isCorrectPassword("plainInputPassword", null);
+        });
+        Assertions.assertThrows(RPAServiceException.class, () -> {
+            passwordChecker.isCorrectPassword(null, null);
+        });
+    }
+
+    @Test
+    public void testIsCorrectPasswordWithInvalidEncryptedPassword() throws Exception {
+        String queueName = "queueName";
+        QueueInfo queueInfo = new QueueInfo();
+        queueInfo.setQueuePassword("encryptedPassword");
+        when(queueService.getQueueInfo(queueName)).thenReturn(queueInfo);
+        when(passwordChecker.decryptQueuePassword("encryptedPassword")).thenThrow(new Exception());
+
+        boolean result = passwordChecker.isCorrectPassword("plainInputPassword", queueName);
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    public void testIsCorrectPasswordWithCorrectPassword() throws Exception {
+        String queueName = "queueName";
+        QueueInfo queueInfo = new QueueInfo();
+        queueInfo.setQueuePassword("encryptedPassword");
+        when(queueService.getQueueInfo(queueName)).thenReturn(queueInfo);
+        when(passwordChecker.decryptQueuePassword("encryptedPassword")).thenReturn("plainPassword");
+
+        boolean result = passwordChecker.isCorrectPassword("plainPassword", queueName);
+
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    public void testIsCorrectPasswordWithIncorrectPassword() throws Exception {
+        String queueName = "queueName";
+        QueueInfo queueInfo = new QueueInfo();
+        queueInfo.setQueuePassword("encryptedPassword");
+        when(queueService.getQueueInfo(queueName)).thenReturn(queueInfo);
+        when(passwordChecker.decryptQueuePassword("encryptedPassword")).thenReturn("plainPassword");
+
+        boolean result = passwordChecker.isCorrectPassword("wrongPassword", queueName);
+
+        Assertions.assertFalse(result);
+    }
+}
 
 
 
