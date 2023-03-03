@@ -551,6 +551,31 @@ public class SecureQueueTest {
 }
 
 
+/////////////////////////////////////////////////testest///////////////////////////
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+
+public class SecureQueueTest {
+
+    @Test
+    public void testDecryptMessageV2() {
+        // create some test data
+        String messageType = QueueMessageTypeEnum.DATA.name();
+        String plainPsId = "example";
+        byte[] encryptedMessage = "VGhpcyBpcyBhIHRlc3Q=".getBytes(); // "This is a test"
+
+        // create the expected result
+        byte[] expected = "This is a test".getBytes();
+
+        // call the method under test
+        byte[] actual = new SecureQueue().decryptMessageV2(encryptedMessage, plainPsId, messageType);
+
+        // check the result
+        assertArrayEquals(expected, actual);
+    }
+}
 
 
 
