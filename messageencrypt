@@ -431,6 +431,43 @@ public class MyTestClass {
 
 
 
+/////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+class YourTestClass {
+
+    private YourClass yourObject;
+    private byte[] encryptedMessage;
+    private byte[] decryptedMessage;
+
+    @BeforeEach
+    void setUp() {
+        yourObject = new YourClass(); // Initialize your object here
+        encryptedMessage = "YourEncryptedMessage".getBytes(); // Replace with your encrypted message
+        decryptedMessage = "YourDecryptedMessage".getBytes(); // Replace with your decrypted message
+    }
+
+    @Test
+    void testDecryptMessageV2WithDataMessageType() {
+        String messageType = QueueMessageTypeEnum.DATA.name();
+        String plainPsId = "YourPlainPsId";
+        byte[] expected = decryptedMessage;
+        byte[] actual = yourObject.decryptMessageV2(Base64.getEncoder().encode(encryptedMessage), plainPsId, messageType);
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    void testDecryptMessageV2WithNonDataMessageType() {
+        String messageType = "YourNonDataMessageType";
+        String plainPsId = "YourPlainPsId";
+        byte[] expected = decryptedMessage;
+        byte[] actual = yourObject.decryptMessageV2(encryptedMessage, plainPsId, messageType);
+        assertArrayEquals(expected, actual);
+    }
+}
 
 
 
