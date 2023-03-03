@@ -862,6 +862,63 @@ class ExampleTest {
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class ExampleTest {
+
+    private Example example;
+
+    @BeforeEach
+    void setUp() {
+        example = new Example();
+    }
+
+    @Test
+    void testIsCorrectPassword_MatchingPasswords() {
+        boolean result = example.isCorrectPassword("password123", "password123");
+
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_DifferentPasswords() {
+        boolean result = example.isCorrectPassword("password123", "wrongPassword");
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_EmptyPassword() {
+        boolean result = example.isCorrectPassword("", "");
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_NullPassword() {
+        boolean result = example.isCorrectPassword(null, null);
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_EmptyInputPassword() {
+        boolean result = example.isCorrectPassword("", "password123");
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testIsCorrectPassword_NullInputPassword() {
+        boolean result = example.isCorrectPassword(null, "password123");
+
+        Assertions.assertFalse(result);
+    }
+}
 
 
 
