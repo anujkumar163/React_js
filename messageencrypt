@@ -659,6 +659,49 @@ public class SecureQueueTest {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class PasswordTest {
+
+    private PasswordChecker passwordChecker;
+
+    @Mock
+    private QueueService queueService;
+
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        passwordChecker = new PasswordChecker(queueService);
+    }
+
+    @Test
+    public void testIsCorrectPassword() throws Exception {
+        String queueName = "testQueue";
+        String plainPassword = "testPassword";
+        String encryptedPassword = "encryptedTestPassword";
+
+        QueueInfo queueInfo = new QueueInfo();
+        queueInfo.setQueuePassword(encryptedPassword);
+
+        when(queueService.getQueueInfo(queueName)).thenReturn(queueInfo);
+        when(passwordChecker.decryptQueuePassword(encryptedPassword)).thenReturn(plainPassword);
+
+        assertTrue(passwordChecker.isCorrectPassword(plainPassword, queueName));
+        assertFalse(passwordChecker.isCorrectPassword("wrongPassword", queueName));
+    }
+}
 
 
 
