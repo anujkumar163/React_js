@@ -996,7 +996,15 @@ class YourClassNameTest {
 }
 
 
-
+//////////////////////////////////////////////////////////////////////////////////
+@Test
+    public void testInvalidParams() {
+        PasswordChecker passwordChecker = new PasswordChecker();
+        Assertions.assertThrows(RPAServiceException.class, () -> passwordChecker.isCorrectPassword(null, "queueName"));
+        Assertions.assertThrows(RPAServiceException.class, () -> passwordChecker.isCorrectPassword("", "queueName"));
+        Assertions.assertThrows(RPAServiceException.class, () -> passwordChecker.isCorrectPassword("plainInputPassword", null));
+        Assertions.assertThrows(RPAServiceException.class, () -> passwordChecker.isCorrectPassword("plainInputPassword", ""));
+    }
 
 
 
