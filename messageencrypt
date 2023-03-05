@@ -1006,6 +1006,29 @@ class YourClassNameTest {
         Assertions.assertThrows(RPAServiceException.class, () -> passwordChecker.isCorrectPassword("plainInputPassword", ""));
     }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+@Test
+    void testDecryptMessage() {
+        // Arrange
+        MyClass myClass = new MyClass();
+        byte[] message = "encrypted message".getBytes();
+        byte[] encryptKey = "encryption key".getBytes();
+
+        // Act
+        byte[] decryptedMessage = myClass.decryptMessage(message, encryptKey);
+
+        // Assert
+        assertNotNull(decryptedMessage);
+        assertNotEquals(message, decryptedMessage);
+    }
+
+}
+In this example, we are testing the decryptMessage method by providing it with an encrypted message and an encryption key, and checking that the decrypted message is not null and is not equal to the original message (which should be encrypted). Of course, you will need to modify this test case to fit your specific requirements and use case.
+
+
+
+
+
 
 
 
