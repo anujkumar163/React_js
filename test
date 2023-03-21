@@ -38,3 +38,63 @@ public void testChangeOwner_nullObjectId() {
     // act
     changeOwner(null, userId, ownerId);
 }
+
+
+processService two
+
+@Test
+public void testChangeOwner_exceptions() {
+    // arrange
+    String objectId = "object123";
+    String userId = "user123";
+    String ownerId = "owner123";
+    List<TbCommonObject> list = new ArrayList<>();
+    TbCommonObject tbCommonObject = new TbCommonObject();
+    TbObjectType tbObjectType = new TbObjectType();
+    tbObjectType.setObjectTypeId(ObjectTypeEnum.PROPERTY.getTypeId());
+    tbCommonObject.setTbObjectType(tbObjectType);
+    tbCommonObject.setOwnerId(userId);
+    list.add(tbCommonObject);
+    when(objectRepository.inquiryObjectList(objectId)).thenReturn(list);
+    when(authService.isAdmin(userId)).thenReturn(true);
+
+    // act and assert
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(null, userId, ownerId);
+    });
+
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(objectId, null, ownerId);
+    });
+
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(objectId, userId, null);
+    });
+
+    when(objectRepository.inquiryObjectList(objectId)).thenReturn(null);
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(objectId, userId, ownerId);
+    });
+
+    when(objectRepository.inquiryObjectList(objectId)).thenReturn(new ArrayList<TbCommonObject>());
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(objectId, userId, ownerId);
+    });
+
+    TbCommonObject process = new TbCommonObject();
+    process.setTbObjectType(ObjectTypeEnum.PROCESS.toTbObjectType());
+    process.setOwnerId(userId);
+    list.clear();
+    list.add(process);
+    when(objectRepository.inquiryObjectList(objectId)).thenReturn(list);
+    when(authService.isAdmin(userId)).thenReturn(false);
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(objectId, userId, ownerId);
+    });
+
+    process.setTbObjectType(ObjectTypeEnum.PROPERTY.toTbObjectType());
+    assertThrows(RPAServiceException.class, () -> {
+        processService.changeOwner(objectId, userId, ownerId);
+    });
+}
+-------------------------------------------------------
