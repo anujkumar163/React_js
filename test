@@ -27,3 +27,14 @@ public ResponseEntity<Map<String, String>> loginProvision(ApLoginRequest apLogin
     }
 }
 ----------------------------------_____------------------___________------------------______________-----------------
+
+processService
+
+public void testChangeOwner_nullObjectId() {
+    // arrange
+    String userId = "user123";
+    String ownerId = "owner123";
+
+    // act
+    changeOwner(null, userId, ownerId);
+}
